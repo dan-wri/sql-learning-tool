@@ -1,0 +1,18 @@
+id: customer-contact-list
+title: Customer contact list
+difficulty: beginner
+ordered: false
+instructions: |
+  The marketing team is preparing a newsletter and needs a contact list.
+
+  Show the first name, last name and email address of every customer, in that column order.
+reference_sql: |
+  SELECT first_name, last_name, email
+  FROM customers;
+hints:
+  - Every query that reads data starts with SELECT, followed by the columns you want to see.
+  - List the columns separated by commas, then name the table they come from using FROM.
+  - The columns you need are first_name, last_name and email, and they all live in the customers table.
+accepted_alternatives:
+  - select c.first_name, c.last_name, c.email from customers as c
+  - SELECT first_name AS given_name, last_name, email FROM customers ORDER BY email DESC

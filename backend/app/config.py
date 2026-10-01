@@ -3,11 +3,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+CHALLENGES_DIR = BACKEND_DIR / "app" / "challenges" / "content"
 
 
 @dataclass(frozen=True)
 class Settings:
     data_dir: Path
+    challenges_dir: Path = CHALLENGES_DIR
 
     @property
     def template_path(self) -> Path:

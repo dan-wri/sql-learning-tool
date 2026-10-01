@@ -20,4 +20,13 @@ export const api = {
   startSession: () => request('/learner/session', { method: 'POST' }),
   resetDatabase: () => request('/learner/reset', { method: 'POST' }),
   schema: () => request('/learner/schema'),
+  listChallenges: () => request('/challenges'),
+  getChallenge: (id) => request(`/challenges/${encodeURIComponent(id)}`),
+  revealHint: (id) => request(`/challenges/${encodeURIComponent(id)}/hints`, { method: 'POST' }),
+  submit: (id, sql) =>
+    request(`/challenges/${encodeURIComponent(id)}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sql }),
+    }),
 }

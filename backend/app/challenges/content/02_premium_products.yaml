@@ -1,0 +1,20 @@
+id: premium-products
+title: Premium products
+difficulty: beginner
+ordered: true
+instructions: |
+  The merchandising team wants to review the shop's premium range.
+
+  List the name and price of every product that costs more than 50, with the most expensive product first.
+reference_sql: |
+  SELECT name, price
+  FROM products
+  WHERE price > 50
+  ORDER BY price DESC;
+hints:
+  - Beyond SELECT and FROM, you need two things - a way to keep only some rows, and a way to sort them.
+  - Use WHERE to keep only rows where the price is greater than 50, and ORDER BY to sort the result.
+  - ORDER BY sorts from smallest to largest by default. Put DESC after the column name to sort largest first.
+accepted_alternatives:
+  - SELECT name, price FROM products WHERE 50 < price ORDER BY 2 DESC
+  - select p.name, p.price from products p where not p.price <= 50 order by -p.price

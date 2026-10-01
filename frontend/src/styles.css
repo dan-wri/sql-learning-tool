@@ -161,3 +161,145 @@ button:disabled {
   display: flex;
   justify-content: flex-end;
 }
+
+button.secondary {
+  background: white;
+  color: var(--accent);
+}
+
+.sidebar-section {
+  margin-top: 1.5rem;
+}
+
+.challenge-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.challenge-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+  background: white;
+  color: inherit;
+  border: 1px solid var(--border);
+}
+
+.challenge-item.selected {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.challenge-item:disabled {
+  background: #f5f7fa;
+}
+
+.status-badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: #e4e7eb;
+  color: #52606d;
+}
+
+.status-badge.completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.unlocked {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.challenge-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.challenge-heading h2 {
+  margin: 0;
+}
+
+.instructions {
+  white-space: pre-wrap;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
+.hints {
+  margin: 0 0 0.75rem;
+  background: #fffbeb;
+  border-radius: 6px;
+  padding: 0.75rem 0.75rem 0.75rem 2rem;
+}
+
+.hints li + li {
+  margin-top: 0.4rem;
+}
+
+.feedback {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+}
+
+.feedback.pass {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.feedback.fail {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.feedback button {
+  margin-left: auto;
+}
+
+.result-scroll {
+  max-height: 360px;
+  overflow: auto;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 0.25rem;
+}
+
+.result table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.result th,
+.result td {
+  padding: 0.35rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.result th {
+  position: sticky;
+  top: 0;
+  background: #f5f7fa;
+}
+
+.result .null {
+  color: #9aa5b1;
+  font-style: italic;
+}
