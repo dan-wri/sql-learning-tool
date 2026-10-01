@@ -37,7 +37,8 @@ def api(client, learner_id):
 
         def unlock_insert_challenge(self):
             for challenge in EARLIER:
-                assert self.submit(challenge.id, challenge.reference_sql)["passed"]
+                assert self.submit(challenge.id, challenge.reference_sql)[
+                    "passed"]
 
     return Api()
 
@@ -59,7 +60,8 @@ def test_incorrect_insert_fails_and_does_not_persist(api):
     assert body["code"] == "wrong_values"
     assert body["persisted"] is False
     assert body["changes"][0]["table"] == "customers"
-    assert body["changes"][0]["counts"] == {"inserted": 1, "updated": 0, "deleted": 0}
+    assert body["changes"][0]["counts"] == {
+        "inserted": 1, "updated": 0, "deleted": 0}
     assert "grace@example.com" in body["changes"][0]["inserted"][0]
     assert api.grace_count() == 0
     assert api.statuses()[INSERT_CHALLENGE.id] == "unlocked"
@@ -67,7 +69,8 @@ def test_incorrect_insert_fails_and_does_not_persist(api):
 
 def test_insert_into_wrong_table_is_blocked(api):
     api.unlock_insert_challenge()
-    body = api.submit(INSERT_CHALLENGE.id, "INSERT INTO categories (name) VALUES ('Garden')")
+    body = api.submit(INSERT_CHALLENGE.id,
+                      "INSERT INTO categories (name) VALUES ('Garden')")
     assert body["passed"] is False
     assert body["code"] == "not_allowed"
     assert body["changes"] is None
@@ -87,7 +90,8 @@ def test_correct_insert_persists_and_is_visible_to_later_queries(api):
     assert api.grace_count() == 1
     assert api.statuses()[INSERT_CHALLENGE.id] == "completed"
 
-    contact_list = api.submit(CHALLENGES[0].id, "SELECT first_name, last_name, email FROM customers")
+    contact_list = api.submit(
+        CHALLENGES[0].id, "SELECT first_name, last_name, email FROM customers")
     assert contact_list["passed"] is True
     assert ["Grace", "Hopper", GRACE_EMAIL] in contact_list["result"]["rows"]
 
@@ -110,7 +114,8 @@ def test_completed_insert_runs_in_review_mode(api):
     assert wrong["review_mode"] is True
     assert "email" in wrong["message"]
 
-    assert api.post(f"/challenges/{INSERT_CHALLENGE.id}/hints").json()["hints"] == INSERT_CHALLENGE.hints[:1]
+    assert api.post(f"/challenges/{INSERT_CHALLENGE.id}/hints").json()[
+        "hints"] == INSERT_CHALLENGE.hints[:1]
     assert api.grace_count() == 1
     assert api.statuses()[INSERT_CHALLENGE.id] == "completed"
 
@@ -138,7 +143,8 @@ def test_reference_sql_never_appears_in_mutation_responses(api):
         api.submit(INSERT_CHALLENGE.id, WRONG_INSERT),
         api.get(f"/challenges/{INSERT_CHALLENGE.id}").json(),
     ]
-    reference = " ".join(INSERT_CHALLENGE.reference_sql.split()).rstrip(";").lower()
+    reference = " ".join(
+        INSERT_CHALLENGE.reference_sql.split()).rstrip(";").lower()
     for body in responses:
         text = " ".join(json.dumps(body).split()).lower()
         assert reference not in text

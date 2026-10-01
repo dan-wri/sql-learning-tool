@@ -37,17 +37,22 @@ FAILURES = [
     (f"INSERT INTO customers {COLUMNS} SELECT 'Grace', 'Hopper', 'g@example.com', 'London', 'UK', '2025-07-01' "
      "WHERE 1 = 0",
      "row_count", "Your INSERT created 0 rows in customers; this task expects 1."),
-    ("SELECT * FROM customers", "wrong_statement", "This challenge requires an INSERT statement."),
-    ("UPDATE customers SET city = 'London' WHERE customer_id = 1", "not_allowed", "UPDATE isn't allowed"),
-    ("DELETE FROM customers WHERE customer_id = 60", "not_allowed", "DELETE isn't allowed"),
-    ("INSERT INTO categories (name) VALUES ('Garden')", "not_allowed", "categories can't be modified"),
+    ("SELECT * FROM customers", "wrong_statement",
+     "This challenge requires an INSERT statement."),
+    ("UPDATE customers SET city = 'London' WHERE customer_id = 1",
+     "not_allowed", "UPDATE isn't allowed"),
+    ("DELETE FROM customers WHERE customer_id = 60",
+     "not_allowed", "DELETE isn't allowed"),
+    ("INSERT INTO categories (name) VALUES ('Garden')",
+     "not_allowed", "categories can't be modified"),
     ("INSERT INTO customers (first_name, last_name, email) VALUES ('Grace', 'Hopper', 'g@example.com')",
      "sql_error", "NOT NULL"),
     (f"INSERT INTO customers {COLUMNS} SELECT 'Grace', 'Hopper', email, 'London', 'UK', '2025-07-01' "
      "FROM customers WHERE customer_id = 1",
      "sql_error", "UNIQUE"),
     ("COMMIT", "not_allowed", "Transactions are managed for you"),
-    (f"INSERT INTO customers {COLUMNS} VALUES {GOOD_VALUES}; COMMIT", "multiple_statements", "one SQL statement"),
+    (f"INSERT INTO customers {COLUMNS} VALUES {GOOD_VALUES}; COMMIT",
+     "multiple_statements", "one SQL statement"),
 ]
 
 
@@ -72,7 +77,8 @@ def test_failed_mutation_previews_the_learners_own_changes(conn):
     assert list(outcome.changes) == ["customers"]
     (row,) = outcome.changes["customers"].inserted
     assert row[3] == "oops@example.com"
-    assert conn.execute("SELECT COUNT(*) FROM customers WHERE email = 'oops@example.com'").fetchone()[0] == 0
+    assert conn.execute(
+        "SELECT COUNT(*) FROM customers WHERE email = 'oops@example.com'").fetchone()[0] == 0
 
 
 def test_timeout_rolls_back(conn):
@@ -99,22 +105,25 @@ def test_correct_insert_commits_data_and_progress_together(conn, sql):
 def test_review_mode_validates_but_never_persists(store, conn):
     submit(conn, INSERT_CHALLENGE, INSERT_CHALLENGE.reference_sql)
     after_first_pass = state(conn)
-    sandbox = review_sandbox_factory(store.template_path, CHALLENGES, INSERT_CHALLENGE.id)
+    sandbox = review_sandbox_factory(
+        store.template_path, CHALLENGES, INSERT_CHALLENGE.id)
 
-    replay = submit(conn, INSERT_CHALLENGE, INSERT_CHALLENGE.accepted_alternatives[1], review_sandbox=sandbox)
+    replay = submit(conn, INSERT_CHALLENGE,
+                    INSERT_CHALLENGE.accepted_alternatives[1], review_sandbox=sandbox)
     assert replay.passed and replay.review_mode, replay.message
     assert not replay.persisted and not replay.newly_completed
     assert replay.changes["customers"].inserted
     assert state(conn) == after_first_pass
 
     wrong = submit(conn, INSERT_CHALLENGE, f"INSERT INTO customers {COLUMNS} VALUES "
-                                           "('Grace', 'Hopper', 'gh@example.com', 'Leeds', 'UK', '2025-07-01')",
+                   "('Grace', 'Hopper', 'gh@example.com', 'Leeds', 'UK', '2025-07-01')",
                    review_sandbox=sandbox)
     assert not wrong.passed and wrong.review_mode
     assert wrong.code == "wrong_values"
     assert "Check: email, city" in wrong.message
 
-    blocked = submit(conn, INSERT_CHALLENGE, "DELETE FROM customers", review_sandbox=sandbox)
+    blocked = submit(conn, INSERT_CHALLENGE,
+                     "DELETE FROM customers", review_sandbox=sandbox)
     assert blocked.code == "not_allowed" and blocked.review_mode
 
     assert state(conn) == after_first_pass
@@ -123,7 +132,8 @@ def test_review_mode_validates_but_never_persists(store, conn):
 
 def test_review_sandbox_matches_learner_state_before_the_challenge(store, conn):
     before_challenge = visible_state(conn)
-    sandbox = canonical_state_before(store.template_path, CHALLENGES, INSERT_CHALLENGE.id)
+    sandbox = canonical_state_before(
+        store.template_path, CHALLENGES, INSERT_CHALLENGE.id)
     try:
         assert visible_state(sandbox) == before_challenge
     finally:

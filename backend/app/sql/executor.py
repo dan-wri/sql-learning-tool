@@ -18,7 +18,8 @@ PROGRESS_INTERVAL = 1_000
 
 READ_KEYWORDS = {"SELECT", "WITH", "VALUES"}
 WRITE_KEYWORDS = {"INSERT", "UPDATE", "DELETE", "REPLACE"}
-TRANSACTION_KEYWORDS = {"BEGIN", "COMMIT", "END", "ROLLBACK", "SAVEPOINT", "RELEASE"}
+TRANSACTION_KEYWORDS = {"BEGIN", "COMMIT",
+                        "END", "ROLLBACK", "SAVEPOINT", "RELEASE"}
 STATEMENT_KEYWORDS = READ_KEYWORDS | WRITE_KEYWORDS | {
     "ALTER", "ANALYZE", "ATTACH", "BEGIN", "COMMIT", "CREATE", "DETACH", "DROP", "END", "EXPLAIN",
     "PRAGMA", "REINDEX", "RELEASE", "ROLLBACK", "SAVEPOINT", "VACUUM",
@@ -121,11 +122,13 @@ def execute_learner_sql(conn: sqlite3.Connection, sql: str, policy: AccessPolicy
                         timeout_seconds: float = TIMEOUT_SECONDS, max_rows: int = MAX_ROWS) -> QueryResult:
     """On QueryError the statement's changes are undone; on success they stay in the caller's transaction."""
     if not conn.in_transaction:
-        raise RuntimeError("Learner SQL must run inside a transaction owned by the caller")
+        raise RuntimeError(
+            "Learner SQL must run inside a transaction owned by the caller")
     _check_text(sql, policy)
     conn.execute("SAVEPOINT learner_statement")
     try:
-        result = _run(conn, sql, max_rows, timeout_seconds, Authorizer(policy), MAX_CHANGES)
+        result = _run(conn, sql, max_rows, timeout_seconds,
+                      Authorizer(policy), MAX_CHANGES)
     except QueryError:
         # An interrupt can make SQLite roll back the whole transaction by itself.
         if conn.in_transaction:

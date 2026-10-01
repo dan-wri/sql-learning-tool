@@ -34,10 +34,12 @@ class Challenge(BaseModel):
     def _check_kind_fields(self) -> "Challenge":
         if self.kind == "query":
             if self.write_operations or self.writable_tables or self.ignore_columns:
-                raise ValueError("query challenges cannot declare write_operations, writable_tables or ignore_columns")
+                raise ValueError(
+                    "query challenges cannot declare write_operations, writable_tables or ignore_columns")
         else:
             if not self.write_operations or not self.writable_tables:
-                raise ValueError("mutation challenges need write_operations and writable_tables")
+                raise ValueError(
+                    "mutation challenges need write_operations and writable_tables")
             if self.ordered:
                 raise ValueError("ordered only applies to query challenges")
         hidden = [t for t in self.writable_tables if is_hidden_table(t)]

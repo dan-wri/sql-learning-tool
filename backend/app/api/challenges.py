@@ -67,9 +67,11 @@ def _changes_payload(changes: dict[str, TableChanges] | None) -> list[TableChang
             table=c.table,
             columns=c.columns,
             inserted=[_row(r) for r in c.inserted[:MAX_PREVIEW_ROWS]],
-            updated=[RowUpdate(before=_row(b), after=_row(a)) for b, a in c.updated[:MAX_PREVIEW_ROWS]],
+            updated=[RowUpdate(before=_row(b), after=_row(a))
+                     for b, a in c.updated[:MAX_PREVIEW_ROWS]],
             deleted=[_row(r) for r in c.deleted[:MAX_PREVIEW_ROWS]],
-            counts=ChangeCounts(inserted=len(c.inserted), updated=len(c.updated), deleted=len(c.deleted)),
+            counts=ChangeCounts(inserted=len(c.inserted), updated=len(
+                c.updated), deleted=len(c.deleted)),
         )
         for c in changes.values()
     ]
@@ -125,7 +127,8 @@ def submit_solution(challenge_id: str, body: SubmitRequest, request: Request, st
     with store.connection(learner_id) as conn:
         challenge = _unlocked_challenge(
             registry, completed_ids(conn), challenge_id)
-        sandbox = review_sandbox_factory(store.template_path, registry.all(), challenge_id)
+        sandbox = review_sandbox_factory(
+            store.template_path, registry.all(), challenge_id)
         outcome = submit(conn, challenge, body.sql, review_sandbox=sandbox)
     next_challenge = registry.next(challenge_id) if outcome.passed else None
     return SubmitResponse(

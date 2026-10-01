@@ -87,6 +87,7 @@ class Authorizer:
             allowed = ", ".join(sorted(self.policy.write_operations))
             return self._deny(f"This challenge only allows {allowed}; {operation} isn't allowed here.")
         if table not in self.policy.writable_tables:
-            allowed = ", ".join(sorted(t for t in self.policy.writable_tables if not is_hidden_table(t)))
+            allowed = ", ".join(
+                sorted(t for t in self.policy.writable_tables if not is_hidden_table(t)))
             return self._deny(f"This challenge only allows changes to {allowed}; {table} can't be modified here.")
         return sqlite3.SQLITE_OK

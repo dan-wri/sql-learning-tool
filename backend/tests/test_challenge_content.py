@@ -85,11 +85,14 @@ def test_loader_rejects_empty_directory(tmp_path):
 @pytest.mark.parametrize(
     "extra, error",
     [
-        ("write_operations: [INSERT]\nwritable_tables: [customers]\n", "query challenges cannot"),
+        ("write_operations: [INSERT]\nwritable_tables: [customers]\n",
+         "query challenges cannot"),
         ("kind: mutation\n", "need write_operations"),
-        ("kind: mutation\nwrite_operations: [INSERT]\n", "need write_operations"),
+        ("kind: mutation\nwrite_operations: [INSERT]\n",
+         "need write_operations"),
         ("kind: mutation\nwrite_operations: [INSERT]\nwritable_tables: [_app_progress]\n", "internal tables"),
-        ("kind: mutation\nwrite_operations: [TRUNCATE]\nwritable_tables: [customers]\n", "write_operations"),
+        ("kind: mutation\nwrite_operations: [TRUNCATE]\nwritable_tables: [customers]\n",
+         "write_operations"),
         ("kind: mutation\nwrite_operations: [INSERT]\nwritable_tables: [customers]\nordered: true\n", "ordered"),
     ],
 )

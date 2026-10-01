@@ -65,7 +65,8 @@ def _attempt_query(conn: sqlite3.Connection, challenge: Challenge, sql: str, tim
     conn.execute("RELEASE reference")
 
     try:
-        actual = execute_learner_sql(conn, sql, challenge.access_policy, timeout_seconds=timeout_seconds)
+        actual = execute_learner_sql(
+            conn, sql, challenge.access_policy, timeout_seconds=timeout_seconds)
     except QueryError as error:
         return _Attempt(False, error.kind, error.message)
     verdict = compare_results(expected, actual, ordered=challenge.ordered)
@@ -86,11 +87,13 @@ def _attempt_mutation(conn: sqlite3.Connection, challenge: Challenge, sql: str, 
     conn.execute("RELEASE reference")
 
     try:
-        result = execute_learner_sql(conn, sql, challenge.access_policy, timeout_seconds=timeout_seconds)
+        result = execute_learner_sql(
+            conn, sql, challenge.access_policy, timeout_seconds=timeout_seconds)
     except QueryError as error:
         return _Attempt(False, error.kind, error.message)
     actual = diff_snapshots(before, take_snapshot(conn))
-    verdict = compare_changes(expected, actual, ignore_columns=challenge.ignore_columns)
+    verdict = compare_changes(
+        expected, actual, ignore_columns=challenge.ignore_columns)
     return _Attempt(verdict.passed, verdict.code, verdict.message,
                     result=result if result.columns else None, changes=actual)
 

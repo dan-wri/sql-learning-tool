@@ -6,10 +6,12 @@ from app.sql.authorizer import AccessPolicy
 from app.sql.executor import MAX_CHANGES, QueryError, execute_learner_sql
 from tests.helpers import internal_state, visible_state
 
-INSERT_CUSTOMERS = AccessPolicy(write_operations=frozenset({"INSERT"}), writable_tables=frozenset({"customers"}))
+INSERT_CUSTOMERS = AccessPolicy(write_operations=frozenset(
+    {"INSERT"}), writable_tables=frozenset({"customers"}))
 MISCONFIGURED = AccessPolicy(
     write_operations=frozenset({"INSERT", "UPDATE", "DELETE"}),
-    writable_tables=frozenset({"customers", "_app_progress", "_app_hints", "_app_meta", "sqlite_schema"}),
+    writable_tables=frozenset(
+        {"customers", "_app_progress", "_app_hints", "_app_meta", "sqlite_schema"}),
 )
 
 NEW_CUSTOMER = (
@@ -51,7 +53,8 @@ def assert_rejected(conn, sql, kind, policy=INSERT_CUSTOMERS, **kwargs):
 def test_insert_into_allowed_table_is_permitted(conn, sql):
     before = conn.execute("SELECT COUNT(*) FROM customers").fetchone()[0]
     execute_learner_sql(conn, sql, INSERT_CUSTOMERS)
-    assert conn.execute("SELECT COUNT(*) FROM customers").fetchone()[0] == before + 1
+    assert conn.execute(
+        "SELECT COUNT(*) FROM customers").fetchone()[0] == before + 1
     assert conn.in_transaction
 
 
@@ -60,7 +63,8 @@ def test_insert_into_allowed_table_is_permitted(conn, sql):
     [
         "UPDATE customers SET city = 'Paris'",
         "DELETE FROM customers WHERE customer_id = 60",
-        NEW_CUSTOMER.replace("'ada@example.com'", "(SELECT email FROM customers WHERE customer_id = 1)")
+        NEW_CUSTOMER.replace(
+            "'ada@example.com'", "(SELECT email FROM customers WHERE customer_id = 1)")
         + " ON CONFLICT (email) DO UPDATE SET city = 'Paris'",
         "INSERT INTO categories (name) VALUES ('Garden')",
         "INSERT INTO orders (customer_id, order_date, status) VALUES (1, '2025-07-01', 'pending')",
@@ -80,7 +84,8 @@ def test_other_writes_are_rejected(conn, sql):
         "DELETE FROM _app_progress",
         "INSERT INTO _app_meta VALUES ('x', 'y')",
         "SELECT * FROM _app_progress",
-        NEW_CUSTOMER.replace("'Ada'", "(SELECT challenge_id FROM _app_progress LIMIT 1)"),
+        NEW_CUSTOMER.replace(
+            "'Ada'", "(SELECT challenge_id FROM _app_progress LIMIT 1)"),
     ],
 )
 def test_internal_tables_stay_hidden_even_if_configured_writable(conn, sql):
@@ -151,4 +156,5 @@ def test_learner_sql_refuses_to_run_outside_a_transaction(store, learner_id):
     with store.connection(learner_id) as connection:
         with pytest.raises(RuntimeError):
             execute_learner_sql(connection, NEW_CUSTOMER, INSERT_CUSTOMERS)
-        assert connection.execute("SELECT COUNT(*) FROM customers WHERE email = 'ada@example.com'").fetchone()[0] == 0
+        assert connection.execute(
+            "SELECT COUNT(*) FROM customers WHERE email = 'ada@example.com'").fetchone()[0] == 0

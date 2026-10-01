@@ -41,10 +41,13 @@ def compare_changes(expected: dict[str, TableChanges], actual: dict[str, TableCh
         exp = expected.get(table)
         act = actual.get(table)
         columns = (exp or act).columns
-        project, kept_columns = _projector(columns, ignore_columns.get(table, []))
+        project, kept_columns = _projector(
+            columns, ignore_columns.get(table, []))
 
-        exp_lists = {k: getattr(exp, k) if exp else [] for k in ("inserted", "updated", "deleted")}
-        act_lists = {k: getattr(act, k) if act else [] for k in ("inserted", "updated", "deleted")}
+        exp_lists = {k: getattr(exp, k) if exp else []
+                     for k in ("inserted", "updated", "deleted")}
+        act_lists = {k: getattr(act, k) if act else []
+                     for k in ("inserted", "updated", "deleted")}
         for kind in ("inserted", "updated", "deleted"):
             if len(exp_lists[kind]) != len(act_lists[kind]):
                 return Verdict(False, "row_count",
@@ -53,7 +56,8 @@ def compare_changes(expected: dict[str, TableChanges], actual: dict[str, TableCh
         exp_inserted = [project(r) for r in exp_lists["inserted"]]
         act_inserted = [project(r) for r in act_lists["inserted"]]
         if Counter(exp_inserted) != Counter(act_inserted):
-            columns_text = ", ".join(_differing_columns(exp_inserted, act_inserted, kept_columns))
+            columns_text = ", ".join(_differing_columns(
+                exp_inserted, act_inserted, kept_columns))
             what = "a row" if len(act_inserted) == 1 else "rows"
             message = f"You inserted {what} into {table}, but one or more values don't match the task."
             return Verdict(False, "wrong_values", message + (f" Check: {columns_text}." if columns_text else ""))
@@ -65,7 +69,8 @@ def compare_changes(expected: dict[str, TableChanges], actual: dict[str, TableCh
         exp_after = [project(new) for _, new in exp_lists["updated"]]
         act_after = [project(new) for _, new in act_lists["updated"]]
         if Counter(exp_after) != Counter(act_after):
-            columns_text = ", ".join(_differing_columns(exp_after, act_after, kept_columns))
+            columns_text = ", ".join(_differing_columns(
+                exp_after, act_after, kept_columns))
             message = f"You updated the right rows in {table}, but the new values don't match the task."
             return Verdict(False, "wrong_values", message + (f" Check: {columns_text}." if columns_text else ""))
 
