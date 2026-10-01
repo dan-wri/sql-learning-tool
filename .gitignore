@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Generated databases (template + per-learner)
+backend/data/
+
+# Node
+node_modules/
+dist/
+
+# OS / editor
+.DS_Store

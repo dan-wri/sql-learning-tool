@@ -1,0 +1,16 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^ls ~/\\.nvm 2>/dev/null \\| head; which brew fnm volta; ls /opt/homebrew/bin \\| grep -i node; python3 -c \"import sqlite3;print\\(sqlite3\\.sqlite_version\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^\\.venv/bin/pip uninstall -q -y httpx && \\.venv/bin/pip install -q -r requirements-dev\\.txt && \\.venv/bin/pytest -q 2>&1 \\| tail -5$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^\\.venv/bin/uvicorn app\\.main:app --port 8000$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
