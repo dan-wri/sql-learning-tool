@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api } from './api/client.js'
 import ChallengeList from './components/ChallengeList.jsx'
 import ChallengeView from './components/ChallengeView.jsx'
+import ChangePreview from './components/ChangePreview.jsx'
 import FeedbackPanel from './components/FeedbackPanel.jsx'
 import HintPanel from './components/HintPanel.jsx'
 import ResultTable from './components/ResultTable.jsx'
@@ -168,6 +169,11 @@ export default function App() {
             </button>
           </div>
           <FeedbackPanel submission={submission} onNext={setSelectedId} />
+          <ChangePreview
+            changes={submission?.changes}
+            persisted={submission?.persisted}
+            reviewMode={submission?.review_mode}
+          />
           <ResultTable result={submission?.result} />
         </section>
       </main>

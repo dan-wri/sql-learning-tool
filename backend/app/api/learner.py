@@ -4,6 +4,7 @@ from app.api.deps import LearnerIdDep, StoreDep
 from app.db.build_template import SEED_VERSION, read_seed_version
 from app.learners.store import LearnerStore
 from app.schemas import ColumnInfo, LearnerSession, SchemaResponse, TableInfo
+from app.sql.snapshot import quote_identifier, visible_tables
 
 router = APIRouter(prefix="/learner", tags=["learner"])
 
@@ -35,19 +36,12 @@ def reset(store: StoreDep, learner_id: LearnerIdDep) -> LearnerSession:
 @router.get("/schema", response_model=SchemaResponse)
 def schema(store: StoreDep, learner_id: LearnerIdDep) -> SchemaResponse:
     with store.connection(learner_id) as conn:
-        names = [
-            row[0]
-            for row in conn.execute(
-                "SELECT name FROM sqlite_schema WHERE type = 'table' "
-                "AND name NOT LIKE '\\_app\\_%' ESCAPE '\\' AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\' "
-                "ORDER BY name"
-            )
-        ]
         tables = []
-        for name in names:
-            quoted = '"' + name.replace('"', '""') + '"'
+        for name in visible_tables(conn):
+            quoted = quote_identifier(name)
             columns = [
-                ColumnInfo(name=col[1], type=col[2], nullable=not (col[3] or col[5]), primary_key=bool(col[5]))
+                ColumnInfo(name=col[1], type=col[2], nullable=not (
+                    col[3] or col[5]), primary_key=bool(col[5]))
                 for col in conn.execute(f"PRAGMA table_info({quoted})")
             ]
             tables.append(TableInfo(name=name, columns=columns))

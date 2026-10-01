@@ -1,0 +1,37 @@
+id: add-new-customer
+title: Welcome a new customer
+difficulty: beginner
+kind: mutation
+write_operations: [INSERT]
+writable_tables: [customers]
+instructions: |
+  A new customer has just signed up. Add her to the customers table with these details:
+
+    first_name    Grace
+    last_name     Hopper
+    email         grace.hopper@example.com
+    phone         (none - she didn't give one)
+    city          London
+    country       UK
+    signup_date   2025-07-01
+
+  Let the database choose her customer_id.
+
+  This change is saved to your training database, so she'll still be there in later challenges.
+reference_sql: |
+  INSERT INTO customers (first_name, last_name, email, city, country, signup_date)
+  VALUES ('Grace', 'Hopper', 'grace.hopper@example.com', 'London', 'UK', '2025-07-01');
+hints:
+  - Adding a row uses INSERT INTO, followed by the table name and, in brackets, the columns you're filling in.
+  - After the column list, write VALUES and the matching values in brackets, in the same order. Text and dates go in single quotes.
+  - You can leave out customer_id (the database assigns the next one) and phone (a missing value becomes NULL). List first_name, last_name, email, city, country and signup_date.
+accepted_alternatives:
+  - >-
+    INSERT INTO customers (first_name, last_name, email, phone, city, country, signup_date)
+    VALUES ('Grace', 'Hopper', 'grace.hopper@example.com', NULL, 'London', 'UK', '2025-07-01')
+  - >-
+    insert into customers (signup_date, country, city, email, last_name, first_name)
+    values ('2025-07-01', 'UK', 'London', 'grace.hopper@example.com', 'Hopper', 'Grace')
+  - >-
+    INSERT INTO customers (first_name, last_name, email, city, country, signup_date)
+    SELECT 'Grace', 'Hopper', 'grace.hopper@example.com', 'London', 'UK', '2025-07-01'

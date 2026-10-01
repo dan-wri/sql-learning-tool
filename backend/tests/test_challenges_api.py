@@ -46,7 +46,8 @@ def test_unknown_challenge_is_404(api):
 
 
 def test_correct_query_passes_and_unlocks_next(api):
-    response = api.submit(FIRST.id, "SELECT first_name, last_name, email FROM customers")
+    response = api.submit(
+        FIRST.id, "SELECT first_name, last_name, email FROM customers")
     body = response.json()
 
     assert response.status_code == 200
@@ -64,7 +65,8 @@ def test_equivalent_query_passes(api):
 
 
 def test_incorrect_result_fails_without_unlocking(api):
-    body = api.submit(FIRST.id, "SELECT first_name, last_name, email FROM customers WHERE city = 'London'").json()
+    body = api.submit(
+        FIRST.id, "SELECT first_name, last_name, email FROM customers WHERE city = 'London'").json()
 
     assert body["passed"] is False
     assert body["code"] == "row_count"
@@ -74,7 +76,8 @@ def test_incorrect_result_fails_without_unlocking(api):
 
 def test_ordering_is_enforced_when_required(api):
     api.submit(FIRST.id, FIRST.reference_sql)
-    body = api.submit(SECOND.id, "SELECT name, price FROM products WHERE price > 50 ORDER BY price").json()
+    body = api.submit(
+        SECOND.id, "SELECT name, price FROM products WHERE price > 50 ORDER BY price").json()
     assert body["passed"] is False
     assert body["code"] == "row_order"
 
@@ -127,7 +130,8 @@ def test_reference_sql_never_appears_in_responses(api):
         api.submit(FIRST.id, FIRST.reference_sql),
         api.get(f"/challenges/{SECOND.id}"),
         api.submit(SECOND.id, "SELECT name, price FROM products"),
-        api.submit(SECOND.id, "SELECT name, price FROM products WHERE price > 50"),
+        api.submit(
+            SECOND.id, "SELECT name, price FROM products WHERE price > 50"),
         api.get(f"/challenges/{SECOND.id}"),
     ]
     for _ in SECOND.hints:

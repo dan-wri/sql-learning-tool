@@ -30,8 +30,10 @@ def build_template(dest: Path) -> None:
         conn.executescript(APP_TABLES_SQL.read_text())
         for table, rows in generate().items():
             placeholders = ", ".join("?" * len(rows[0]))
-            conn.executemany(f"INSERT INTO {table} VALUES ({placeholders})", rows)
-        conn.execute("INSERT INTO _app_meta (key, value) VALUES ('seed_version', ?)", (str(SEED_VERSION),))
+            conn.executemany(
+                f"INSERT INTO {table} VALUES ({placeholders})", rows)
+        conn.execute(
+            "INSERT INTO _app_meta (key, value) VALUES ('seed_version', ?)", (str(SEED_VERSION),))
         conn.commit()
     finally:
         conn.close()
@@ -40,7 +42,8 @@ def build_template(dest: Path) -> None:
 
 
 def read_seed_version(conn: sqlite3.Connection) -> int | None:
-    row = conn.execute("SELECT value FROM _app_meta WHERE key = 'seed_version'").fetchone()
+    row = conn.execute(
+        "SELECT value FROM _app_meta WHERE key = 'seed_version'").fetchone()
     return int(row[0]) if row else None
 
 

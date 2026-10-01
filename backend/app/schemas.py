@@ -5,12 +5,14 @@ from pydantic import BaseModel, Field
 from app.sql.executor import MAX_SQL_LENGTH
 
 ChallengeStatus = Literal["completed", "unlocked", "locked"]
+ChallengeKind = Literal["query", "mutation"]
 
 
 class ChallengeSummary(BaseModel):
     id: str
     title: str
     difficulty: str
+    kind: ChallengeKind
     status: ChallengeStatus
 
 
@@ -18,6 +20,8 @@ class ChallengeDetail(ChallengeSummary):
     instructions: str
     hints: list[str]
     total_hints: int
+    # Completed mutation challenges: submissions are validated but always rolled back.
+    review_mode: bool
 
 
 class HintsResponse(BaseModel):
@@ -36,11 +40,37 @@ class ResultPayload(BaseModel):
     truncated: bool
 
 
+class RowUpdate(BaseModel):
+    before: list[Any]
+    after: list[Any]
+
+
+class ChangeCounts(BaseModel):
+    inserted: int
+    updated: int
+    deleted: int
+
+
+class TableChangesPayload(BaseModel):
+    table: str
+    columns: list[str]
+    inserted: list[list[Any]]
+    updated: list[RowUpdate]
+    deleted: list[list[Any]]
+    # Full counts; the row lists above may be capped for display.
+    counts: ChangeCounts
+
+
 class SubmitResponse(BaseModel):
     passed: bool
     code: str
     message: str
     result: ResultPayload | None
+    # The learner's own attempted changes (mutation challenges only).
+    changes: list[TableChangesPayload] | None
+    # True when the transaction was committed to the learner's database.
+    persisted: bool
+    review_mode: bool
     newly_completed: bool
     next_challenge_id: str | None
 

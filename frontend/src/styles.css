@@ -303,3 +303,110 @@ button.secondary {
   color: #9aa5b1;
   font-style: italic;
 }
+
+.badge.mutation {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.alert.review {
+  margin: 0 0 1rem;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border: 1px solid #bfdbfe;
+  line-height: 1.5;
+}
+
+.change-preview {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.change-preview-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.change-preview-header h2 {
+  margin: 0;
+}
+
+.persist-note {
+  font-size: 0.85rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+}
+
+.persist-note.saved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.persist-note.discarded {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.table-changes h3 {
+  font-size: 0.95rem;
+  margin: 1rem 0 0.25rem;
+  font-family: ui-monospace, monospace;
+}
+
+.change-section h4 {
+  font-size: 0.85rem;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.change-preview table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.change-preview th,
+.change-preview td {
+  padding: 0.35rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.change-preview th {
+  background: #f5f7fa;
+}
+
+.change-preview tr.inserted {
+  background: #f0fdf4;
+}
+
+.change-preview tr.deleted {
+  background: #fef2f2;
+  text-decoration: line-through;
+}
+
+.change-preview tr.before {
+  color: #7b8794;
+}
+
+.change-preview td.changed {
+  font-weight: 600;
+}
+
+.change-preview tr.after td.changed {
+  background: #fef9c3;
+}
+
+.change-preview .row-label {
+  color: #7b8794;
+  font-size: 0.75rem;
+}
+
+.change-preview .null {
+  color: #9aa5b1;
+  font-style: italic;
+}

@@ -83,6 +83,10 @@ class Authorizer:
             return self._deny(MSG_READ_ONLY)
         if is_hidden_table(table):
             return self._deny(MSG_HIDDEN_TABLE)
-        if operation not in self.policy.write_operations or table not in self.policy.writable_tables:
-            return self._deny(f"This challenge doesn't allow {operation} on {table}.")
+        if operation not in self.policy.write_operations:
+            allowed = ", ".join(sorted(self.policy.write_operations))
+            return self._deny(f"This challenge only allows {allowed}; {operation} isn't allowed here.")
+        if table not in self.policy.writable_tables:
+            allowed = ", ".join(sorted(t for t in self.policy.writable_tables if not is_hidden_table(t)))
+            return self._deny(f"This challenge only allows changes to {allowed}; {table} can't be modified here.")
         return sqlite3.SQLITE_OK

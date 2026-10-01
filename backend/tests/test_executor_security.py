@@ -58,7 +58,8 @@ WRITES_AND_DDL = [
     "delete from payments",
 ]
 
-TRANSACTION_CONTROL = ["BEGIN", "COMMIT", "END", "ROLLBACK", "SAVEPOINT s", "RELEASE s", "ROLLBACK TO s"]
+TRANSACTION_CONTROL = ["BEGIN", "COMMIT", "END",
+                       "ROLLBACK", "SAVEPOINT s", "RELEASE s", "ROLLBACK TO s"]
 
 INTERNAL_TABLE_ACCESS = [
     "SELECT * FROM _app_progress",
@@ -135,7 +136,8 @@ def test_connection_is_usable_after_timeout(conn):
             conn, "WITH RECURSIVE r(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM r) SELECT COUNT(*) FROM r",
             timeout_seconds=0.1,
         )
-    assert run_in_transaction(conn, "SELECT COUNT(*) FROM customers").rows[0][0] > 0
+    assert run_in_transaction(
+        conn, "SELECT COUNT(*) FROM customers").rows[0][0] > 0
 
 
 def test_result_rows_are_capped(conn):
@@ -147,7 +149,8 @@ def test_result_rows_are_capped(conn):
 
 def test_authorizer_is_removed_afterwards(conn):
     run_in_transaction(conn, "SELECT 1")
-    assert conn.execute("SELECT COUNT(*) FROM _app_progress").fetchone()[0] == 0
+    assert conn.execute(
+        "SELECT COUNT(*) FROM _app_progress").fetchone()[0] == 0
 
 
 def test_previously_prepared_statement_cannot_bypass_authorizer(conn):

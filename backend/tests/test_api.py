@@ -24,7 +24,8 @@ def test_session_creates_learner_db_then_reuses_it(client, learner_id):
 
 
 def test_invalid_learner_id_is_rejected(client):
-    response = client.post("/api/learner/session", headers=_headers("../../template"))
+    response = client.post("/api/learner/session",
+                           headers=_headers("../../template"))
     assert response.status_code == 400
 
 
@@ -37,7 +38,8 @@ def test_schema_hides_internal_tables(client, learner_id):
     assert response.status_code == 200
     names = [t["name"] for t in response.json()["tables"]]
     assert "customers" in names
-    assert not any(n.startswith("_app_") or n.startswith("sqlite_") for n in names)
+    assert not any(n.startswith("_app_") or n.startswith("sqlite_")
+                   for n in names)
 
 
 def test_reset_endpoint(client, settings):

@@ -32,7 +32,8 @@ def status_of(registry: ChallengeRegistry, completed: set[str], challenge_id: st
 
 
 def hints_revealed(conn: sqlite3.Connection, challenge_id: str) -> int:
-    row = conn.execute("SELECT hints_revealed FROM _app_hints WHERE challenge_id = ?", (challenge_id,)).fetchone()
+    row = conn.execute(
+        "SELECT hints_revealed FROM _app_hints WHERE challenge_id = ?", (challenge_id,)).fetchone()
     return row[0] if row else 0
 
 

@@ -19,7 +19,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(title="SQL Learning Tool", lifespan=lifespan)
     app.state.settings = settings
-    app.state.learner_store = LearnerStore(settings.template_path, settings.learners_dir)
+    app.state.learner_store = LearnerStore(
+        settings.template_path, settings.learners_dir)
     app.state.registry = load_challenges(settings.challenges_dir)
 
     app.include_router(health.router, prefix="/api")

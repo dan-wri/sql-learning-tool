@@ -14,7 +14,8 @@ class Verdict:
     message: str
 
 
-PASS = Verdict(True, "pass", "Correct! Your query returns exactly the right result.")
+PASS = Verdict(
+    True, "pass", "Correct! Your query returns exactly the right result.")
 
 
 def _plural(n: int, word: str) -> str:
@@ -40,7 +41,8 @@ def compare_results(expected: QueryResult, actual: QueryResult, *, ordered: bool
     actual_rows = [normalize_row(r) for r in actual.rows]
 
     if len(expected_rows) != len(actual_rows):
-        direction = "more" if len(actual_rows) > len(expected_rows) else "fewer"
+        direction = "more" if len(actual_rows) > len(
+            expected_rows) else "fewer"
         advice = ("Check whether your WHERE clause or LIMIT is filtering enough." if direction == "more"
                   else "Check whether your WHERE clause or LIMIT is too strict.")
         return Verdict(False, "row_count",
@@ -55,14 +57,16 @@ def compare_results(expected: QueryResult, actual: QueryResult, *, ordered: bool
 
     expected_columns = [Counter(col) for col in zip(*expected_rows)]
     actual_columns = [Counter(col) for col in zip(*actual_rows)]
-    mismatched = [i for i, (e, a) in enumerate(zip(expected_columns, actual_columns)) if e != a]
+    mismatched = [i for i, (e, a) in enumerate(
+        zip(expected_columns, actual_columns)) if e != a]
 
     if mismatched and sorted(map(_counter_key, expected_columns)) == sorted(map(_counter_key, actual_columns)):
         return Verdict(False, "column_order",
                        "Your columns contain the right data but are in a different order from the task.")
 
     if mismatched:
-        labels = ", ".join(_column_label(actual.columns, i) for i in mismatched)
+        labels = ", ".join(_column_label(actual.columns, i)
+                           for i in mismatched)
         return Verdict(False, "wrong_values",
                        f"The values in {labels} don't match what the task expects.")
 

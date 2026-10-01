@@ -44,13 +44,15 @@ def test_learners_are_isolated(store, learner_id):
 
 def test_reset_restores_visible_and_progress_state(store, learner_id):
     with store.connection(learner_id) as conn:
-        original_visible, original_internal = visible_state(conn), internal_state(conn)
+        original_visible, original_internal = visible_state(
+            conn), internal_state(conn)
         conn.execute(
             "INSERT INTO customers (first_name, last_name, email, city, country, signup_date) "
             "VALUES ('Ada', 'Lovelace', 'ada@example.com', 'London', 'UK', '2025-07-01')"
         )
         conn.execute("UPDATE products SET price = price * 2")
-        conn.execute("INSERT INTO _app_progress VALUES ('select-01', '2025-07-01T00:00:00Z')")
+        conn.execute(
+            "INSERT INTO _app_progress VALUES ('select-01', '2025-07-01T00:00:00Z')")
         conn.execute("INSERT INTO _app_hints VALUES ('select-02', 2)")
         assert visible_state(conn) != original_visible
 
@@ -77,4 +79,5 @@ def test_reset_discards_leftover_journal(store, learner_id):
 def test_connection_enables_foreign_keys(store, learner_id):
     with store.connection(learner_id) as conn:
         with pytest.raises(sqlite3.IntegrityError):
-            conn.execute("INSERT INTO orders (customer_id, order_date, status) VALUES (9999, '2025-01-01', 'pending')")
+            conn.execute(
+                "INSERT INTO orders (customer_id, order_date, status) VALUES (9999, '2025-01-01', 'pending')")

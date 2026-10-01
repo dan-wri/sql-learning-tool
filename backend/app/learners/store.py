@@ -62,7 +62,8 @@ class LearnerStore:
         """Locked connection to the learner's database; transactions are controlled explicitly by callers."""
         with self.locked(learner_id):
             self._ensure_unlocked(learner_id)
-            conn = sqlite3.connect(self.path_for(learner_id), isolation_level=None)
+            conn = sqlite3.connect(self.path_for(
+                learner_id), isolation_level=None)
             try:
                 conn.execute("PRAGMA foreign_keys = ON")
                 yield conn

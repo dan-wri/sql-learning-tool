@@ -49,7 +49,8 @@ def test_timeout_rolls_back(conn):
 
 def test_pass_records_progress_once(conn):
     first = submit(conn, FIRST, FIRST.reference_sql)
-    again = submit(conn, FIRST, "select email as e, last_name, first_name from customers")
+    again = submit(
+        conn, FIRST, "select email as e, last_name, first_name from customers")
     third = submit(conn, FIRST, FIRST.accepted_alternatives[0])
 
     assert first.passed and first.newly_completed
