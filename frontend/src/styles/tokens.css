@@ -1,0 +1,86 @@
+/* Design tokens for Brightcart SQL Studio (see docs/UI_DESIGN_BRIEF.md). */
+:root {
+  --canvas: #f5f7fb;
+  --surface: #ffffff;
+  --surface-subtle: #f8fafc;
+  --surface-hover: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --text: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-locked: #6b7a90;
+
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-soft: #eef2ff;
+  --teal: #0f766e;
+  --teal-soft: #ccfbf1;
+
+  --success: #15803d;
+  --success-soft: #dcfce7;
+  --warning: #b45309;
+  --warning-soft: #fef3c7;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
+  --review: #2563eb;
+  --review-soft: #dbeafe;
+
+  --chapter-1: #2563eb;
+  --chapter-2: #0f766e;
+  --chapter-3: #d97706;
+  --chapter-4: #7c3aed;
+  --chapter-5: #db2777;
+
+  --font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-pop: 0 12px 32px rgb(15 23 42 / 0.16);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--primary) 35%, transparent);
+
+  --t-fast: 140ms;
+  --t-base: 200ms;
+  --t-slow: 450ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --header-h: 60px;
+  --rail-h: 56px;
+  --nav-w: 280px;
+  --explorer-w: 320px;
+}
+
+[data-chapter='1'] { --chapter: var(--chapter-1); }
+[data-chapter='2'] { --chapter: var(--chapter-2); }
+[data-chapter='3'] { --chapter: var(--chapter-3); }
+[data-chapter='4'] { --chapter: var(--chapter-4); }
+[data-chapter='5'] { --chapter: var(--chapter-5); }
+
+[data-chapter] {
+  --chapter-soft: color-mix(in srgb, var(--chapter) 7%, white);
+  --chapter-tint: color-mix(in srgb, var(--chapter) 15%, white);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

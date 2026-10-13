@@ -28,7 +28,7 @@ const detail = (status) => ({
 
 beforeEach(() => {
   vi.resetAllMocks()
-  api.health.mockResolvedValue({ status: 'ok', sqlite_version: '3.50.0', seed_version: 1 })
+  api.health.mockResolvedValue({ status: 'ok', sqlite_version: '3.50.0', seed_version: 2 })
   api.startSession.mockResolvedValue({ learner_id: '11111111-1111-4111-8111-111111111111', stale: false })
   api.schema.mockResolvedValue({ tables: [] })
   api.listChallenges

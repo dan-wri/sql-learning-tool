@@ -1,54 +1,114 @@
+import { BookOpen, DatabaseZap, RotateCcw } from 'lucide-react'
+import { TOTAL_LEVELS, chapterName, chapterOf } from '../lib/chapters.js'
+
 // Task text marks identifiers with `backticks`; render them as inline code.
 function inlineCode(text) {
   return text.split('`').map((part, index) => (index % 2 === 1 ? <code key={index}>{part}</code> : part))
 }
 
-export default function ChallengeView({ challenge }) {
+export function ChallengeHeader({ challenge }) {
+  const chapterId = chapterOf(challenge)
+  const concepts = (challenge.concepts ?? []).slice(0, 3)
+  return (
+    <header className="challenge-header">
+      <div className="challenge-meta">
+        <p className="eyebrow">
+          Chapter {chapterId} · {chapterName(chapterId)}
+        </p>
+        {challenge.level != null && (
+          <p className="eyebrow level-label">
+            Level {challenge.level} / {TOTAL_LEVELS}
+          </p>
+        )}
+      </div>
+      <div className="challenge-title-row">
+        <h2>{challenge.title}</h2>
+        {challenge.status === 'completed' && <span className="status-chip done">Completed</span>}
+        {challenge.kind === 'mutation' && (
+          <span className="status-chip mutation">
+            <DatabaseZap size={13} aria-hidden="true" /> Changes data
+          </span>
+        )}
+      </div>
+      <div className="challenge-tags">
+        {concepts.length > 0 && (
+          <ul className="concepts" aria-label="Concepts">
+            {concepts.map((concept) => (
+              <li key={concept}>{concept}</li>
+            ))}
+          </ul>
+        )}
+        <span className="difficulty">
+          <span className="sr-only">Difficulty: </span>
+          {challenge.difficulty}
+        </span>
+      </div>
+    </header>
+  )
+}
+
+export function ReviewBanner({ mutation }) {
+  return (
+    <div className="review-banner" role="note">
+      <RotateCcw size={16} aria-hidden="true" />
+      <p>
+        <strong>Review mode</strong>{' '}
+        {mutation
+          ? "You've already completed this level. Practise it again for the usual feedback — changes from this attempt won't be saved to your database."
+          : "You've already completed this level. Your attempt runs against the data as it was when you first met this challenge, so later changes to the database won't affect it."}
+      </p>
+    </div>
+  )
+}
+
+export function SituationCard({ story }) {
+  return (
+    <section className="situation" aria-labelledby="situation-heading">
+      <h3 id="situation-heading" className="eyebrow">
+        <BookOpen size={14} aria-hidden="true" /> The situation
+      </h3>
+      <p>{inlineCode(story)}</p>
+    </section>
+  )
+}
+
+export function TaskCard({ instructions }) {
+  return (
+    <section className="task" aria-labelledby="task-heading">
+      <h3 id="task-heading" className="eyebrow">
+        Your task
+      </h3>
+      <p className="task-text">{inlineCode(instructions)}</p>
+    </section>
+  )
+}
+
+export default function ChallengeView({ challenge, loading = false }) {
   if (!challenge) {
-    return <p className="muted">Select a challenge to begin.</p>
+    return loading ? (
+      <div className="challenge-view" aria-busy="true" aria-label="Loading level">
+        <div className="skeleton skeleton-line short" />
+        <div className="skeleton skeleton-title" />
+        <div className="skeleton skeleton-block" />
+        <div className="skeleton skeleton-block" />
+      </div>
+    ) : (
+      <p className="muted pad">Select a level to begin.</p>
+    )
   }
-  const isMutation = challenge.kind === 'mutation'
+  const mutation = challenge.kind === 'mutation'
   return (
     <div className="challenge-view">
-      {challenge.level != null && (
-        <p className="challenge-eyebrow">
-          Level {challenge.level}
-          {challenge.chapter != null && ` · Chapter ${challenge.chapter}`}
+      <ChallengeHeader challenge={challenge} />
+      {challenge.review_mode && <ReviewBanner mutation={mutation} />}
+      {challenge.story && <SituationCard story={challenge.story} />}
+      <TaskCard instructions={challenge.instructions} />
+      {mutation && !challenge.review_mode && (
+        <p className="mutation-note">
+          <DatabaseZap size={14} aria-hidden="true" /> This level changes your Brightcart database, and the change is saved
+          when you pass.
         </p>
       )}
-      <div className="challenge-heading">
-        <h2>{challenge.title}</h2>
-        <span className="badge">{challenge.difficulty}</span>
-        {isMutation && <span className="badge mutation">Changes data</span>}
-        {challenge.status === 'completed' && <span className="status-badge completed">Completed</span>}
-      </div>
-      {challenge.concepts?.length > 0 && (
-        <ul className="concepts" aria-label="Concepts">
-          {challenge.concepts.map((concept) => (
-            <li key={concept} className="badge">
-              {concept}
-            </li>
-          ))}
-        </ul>
-      )}
-      {challenge.review_mode && (
-        <div className="alert review" role="note">
-          <strong>Review mode</strong> —{' '}
-          {isMutation
-            ? "You've already completed this challenge. You can practise it again and get the usual feedback, but any database changes from this attempt won't be saved to your training database."
-            : "You've already completed this challenge. Your query runs against the data as it was when you first met this challenge, so later changes to the database won't affect your result."}
-        </div>
-      )}
-      {challenge.story && (
-        <section className="challenge-story" aria-labelledby="story-heading">
-          <h3 id="story-heading">The situation</h3>
-          <p>{inlineCode(challenge.story)}</p>
-        </section>
-      )}
-      <section className="challenge-task" aria-labelledby="task-heading">
-        <h3 id="task-heading">Your task</h3>
-        <p className="instructions">{inlineCode(challenge.instructions)}</p>
-      </section>
     </div>
   )
 }

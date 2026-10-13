@@ -1,18 +1,32 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Database, ListTree, TriangleAlert, X } from 'lucide-react'
 import { api } from './api/client.js'
-import ChallengeList from './components/ChallengeList.jsx'
+import ChallengeNavigator from './components/ChallengeNavigator.jsx'
 import ChallengeView from './components/ChallengeView.jsx'
-import ChangePreview from './components/ChangePreview.jsx'
-import FeedbackPanel from './components/FeedbackPanel.jsx'
+import ChapterRail from './components/ChapterRail.jsx'
+import ConfirmDialog from './components/ConfirmDialog.jsx'
+import DatabaseExplorer from './components/DatabaseExplorer.jsx'
 import HintPanel from './components/HintPanel.jsx'
-import ResultTable from './components/ResultTable.jsx'
-import SchemaPanel from './components/SchemaPanel.jsx'
-import SqlEditor from './components/SqlEditor.jsx'
+import OutputWorkspace from './components/OutputWorkspace.jsx'
+import ProductHeader from './components/ProductHeader.jsx'
+import SqlWorkspace from './components/SqlWorkspace.jsx'
+import { chapterOf, summariseChapters } from './lib/chapters.js'
 
 const STARTER_SQL = 'SELECT *\nFROM customers\nLIMIT 10;\n'
 
-function defaultChallengeId(challenges) {
-  return (challenges.find((c) => c.status === 'unlocked') ?? challenges[0])?.id ?? null
+function defaultChallenge(challenges) {
+  return challenges.find((c) => c.status === 'unlocked') ?? challenges[0] ?? null
+}
+
+// Network failures get a product-level message; server messages are already learner-friendly.
+function describeError(err) {
+  if (err instanceof TypeError) {
+    return {
+      message: "We couldn't reach the local SQL service. Check that the backend is running, then try again.",
+      details: err.message,
+    }
+  }
+  return { message: err.message, details: null }
 }
 
 export default function App() {
@@ -21,13 +35,19 @@ export default function App() {
   const [tables, setTables] = useState(null)
   const [challenges, setChallenges] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
+  const [chapterId, setChapterId] = useState(1)
   const [challenge, setChallenge] = useState(null)
   const [sqlText, setSqlText] = useState(STARTER_SQL)
   const [submission, setSubmission] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [revealingHint, setRevealingHint] = useState(false)
   const [error, setError] = useState(null)
+  const [backendOk, setBackendOk] = useState(true)
+  const [confirmingReset, setConfirmingReset] = useState(false)
   const [resetting, setResetting] = useState(false)
+  const [panel, setPanel] = useState(null)
+
+  const fail = useCallback((err) => setError(describeError(err)), [])
 
   const loadSchema = useCallback(async () => {
     const result = await api.schema()
@@ -40,50 +60,91 @@ export default function App() {
     return list
   }, [])
 
-  useEffect(() => {
+  const selectChallenge = useCallback(
+    (id, list) => {
+      const target = (list ?? challenges ?? []).find((c) => c.id === id)
+      if (target) setChapterId(chapterOf(target))
+      setSelectedId(id)
+      setPanel(null)
+    },
+    [challenges],
+  )
+
+  const bootstrap = useCallback(() => {
+    setError(null)
     Promise.all([api.health(), api.startSession()])
       .then(([healthResult, sessionResult]) => {
         setHealth(healthResult)
         setSession(sessionResult)
+        setBackendOk(true)
         return Promise.all([loadSchema(), loadChallenges()])
       })
-      .then(([, list]) => setSelectedId(defaultChallengeId(list)))
-      .catch((err) => setError(err.message))
-  }, [loadSchema, loadChallenges])
+      .then(([, list]) => {
+        const first = defaultChallenge(list)
+        if (first) selectChallenge(first.id, list)
+      })
+      .catch((err) => {
+        setBackendOk(!(err instanceof TypeError))
+        fail(err)
+      })
+  }, [loadSchema, loadChallenges, selectChallenge, fail])
+
+  useEffect(() => {
+    bootstrap()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (!selectedId) {
       setChallenge(null)
-      return
+      return undefined
     }
     let cancelled = false
     setSubmission(null)
+    setChallenge(null)
     api
       .getChallenge(selectedId)
       .then((detail) => !cancelled && setChallenge(detail))
-      .catch((err) => !cancelled && setError(err.message))
+      .catch((err) => !cancelled && fail(err))
     return () => {
       cancelled = true
     }
-  }, [selectedId])
+  }, [selectedId, fail])
 
   const editorSchema = useMemo(
     () => Object.fromEntries((tables ?? []).map((t) => [t.name, t.columns.map((c) => c.name)])),
     [tables],
   )
+  const chapters = useMemo(() => summariseChapters(challenges), [challenges])
+  const activeChapter = chapters.find((c) => c.id === chapterId) ?? chapters[0]
+  const chapterChallenges = useMemo(
+    () => (challenges ? challenges.filter((c) => chapterOf(c) === chapterId) : null),
+    [challenges, chapterId],
+  )
+  const selectedSummary = challenges?.find((c) => c.id === selectedId)
+  const completedCount = challenges ? challenges.filter((c) => c.status === 'completed').length : 0
+
+  const nextChallenge = submission?.next_challenge_id
+    ? challenges?.find((c) => c.id === submission.next_challenge_id)
+    : null
+  const canContinue = Boolean(nextChallenge && nextChallenge.status !== 'locked')
 
   async function handleSubmit() {
+    if (!challenge || submitting) return
     setSubmitting(true)
     setError(null)
     try {
       const outcome = await api.submit(selectedId, sqlText)
-      setSubmission(outcome)
       if (outcome.passed) {
         const [, detail] = await Promise.all([loadChallenges(), api.getChallenge(selectedId)])
         setChallenge(detail)
       }
+      if (outcome.persisted && outcome.changes?.length) {
+        await loadSchema()
+      }
+      setSubmission(outcome)
     } catch (err) {
-      setError(err.message)
+      fail(err)
     } finally {
       setSubmitting(false)
     }
@@ -95,64 +156,110 @@ export default function App() {
       const { hints } = await api.revealHint(selectedId)
       setChallenge((current) => ({ ...current, hints }))
     } catch (err) {
-      setError(err.message)
+      fail(err)
     } finally {
       setRevealingHint(false)
     }
   }
 
   async function handleReset() {
-    if (!window.confirm('Reset your training database? All changes and progress will be lost.')) {
-      return
-    }
+    setConfirmingReset(false)
     setResetting(true)
     setError(null)
     try {
       setSession(await api.resetDatabase())
       const [, list] = await Promise.all([loadSchema(), loadChallenges()])
-      const nextId = defaultChallengeId(list)
+      const next = defaultChallenge(list)
       setSubmission(null)
-      setSelectedId(nextId)
+      if (next) setChapterId(chapterOf(next))
+      setSelectedId(next?.id ?? null)
       // Selecting the same id again wouldn't re-trigger the effect, so refresh the detail directly.
-      setChallenge(nextId ? await api.getChallenge(nextId) : null)
+      setChallenge(next ? await api.getChallenge(next.id) : null)
     } catch (err) {
-      setError(err.message)
+      fail(err)
     } finally {
       setResetting(false)
     }
   }
 
+  const loadFailed = !challenges && error
+
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>SQL Learning Tool</h1>
-        <div className="header-status">
-          {health && <span className="badge ok">API ok · SQLite {health.sqlite_version}</span>}
-          {session && <span className="badge" title={session.learner_id}>Learner {session.learner_id.slice(0, 8)}</span>}
-          <button type="button" onClick={handleReset} disabled={!session || resetting}>
-            {resetting ? 'Resetting…' : 'Reset database'}
+    <div className="studio">
+      <ProductHeader
+        health={health}
+        session={session}
+        backendOk={backendOk}
+        currentLevel={selectedSummary?.level ?? null}
+        completedCount={completedCount}
+        onResetRequest={() => setConfirmingReset(true)}
+        resetting={resetting}
+      />
+      <ChapterRail
+        chapters={chapters}
+        selectedId={activeChapter?.id}
+        onSelect={(id) => {
+          setChapterId(id)
+          const first = challenges?.find((c) => chapterOf(c) === id && c.status !== 'locked')
+          if (first && chapterOf(selectedSummary) !== id) selectChallenge(first.id)
+        }}
+      />
+
+      {panel && <div className="drawer-scrim" onClick={() => setPanel(null)} aria-hidden="true" />}
+
+      <div className="studio-body">
+        <aside className="side-panel nav-panel panel" data-open={panel === 'nav'} aria-label="Level navigator">
+          <button type="button" className="btn btn-ghost drawer-close" onClick={() => setPanel(null)}>
+            <X size={16} aria-hidden="true" /> Close
           </button>
-        </div>
-      </header>
-
-      {error && <div className="alert error">{error}</div>}
-      {session?.stale && (
-        <div className="alert warning">
-          Your training database was created from an older dataset. Reset it to get the latest version.
-        </div>
-      )}
-
-      <main className="layout">
-        <aside className="sidebar">
-          <h2>Challenges</h2>
-          <ChallengeList challenges={challenges} selectedId={selectedId} onSelect={setSelectedId} />
-          <h2 className="sidebar-section">Schema</h2>
-          <SchemaPanel tables={tables} />
+          {activeChapter && (
+            <ChallengeNavigator
+              chapter={activeChapter}
+              challenges={chapterChallenges}
+              selectedId={selectedId}
+              onSelect={selectChallenge}
+            />
+          )}
         </aside>
 
-        <section className="workspace">
-          <div className="card">
-            <ChallengeView challenge={challenge} />
+        <main className="workspace" data-chapter={chapterOf(selectedSummary ?? challenge)}>
+          <div className="workspace-bar">
+            <button type="button" className="btn btn-secondary btn-sm bar-levels" onClick={() => setPanel('nav')}>
+              <ListTree size={15} aria-hidden="true" /> Levels
+            </button>
+            <button type="button" className="btn btn-secondary btn-sm bar-database" onClick={() => setPanel('db')}>
+              <Database size={15} aria-hidden="true" /> Database
+            </button>
+          </div>
+
+          {error && (
+            <div className="alert error" role="alert">
+              <TriangleAlert size={18} aria-hidden="true" />
+              <div>
+                <p>{error.message}</p>
+                {error.details && (
+                  <details>
+                    <summary>Technical details</summary>
+                    <code>{error.details}</code>
+                  </details>
+                )}
+              </div>
+              {loadFailed && (
+                <button type="button" className="btn btn-secondary btn-sm" onClick={bootstrap}>
+                  Try again
+                </button>
+              )}
+            </div>
+          )}
+          {session?.stale && (
+            <div className="alert warning" role="note">
+              <TriangleAlert size={18} aria-hidden="true" />
+              <p>Your training database was created from an older dataset. Reset it to get the latest version.</p>
+            </div>
+          )}
+
+          <section className="card challenge-card">
+            <ChallengeView challenge={challenge} loading={Boolean(selectedId) && !error} />
             {challenge && (
               <HintPanel
                 hints={challenge.hints}
@@ -161,22 +268,42 @@ export default function App() {
                 revealing={revealingHint}
               />
             )}
-          </div>
-          <SqlEditor initialValue={STARTER_SQL} onChange={setSqlText} schema={editorSchema} />
-          <div className="actions">
-            <button type="button" onClick={handleSubmit} disabled={!challenge || submitting}>
-              {submitting ? 'Running…' : 'Submit'}
-            </button>
-          </div>
-          <FeedbackPanel submission={submission} onNext={setSelectedId} />
-          <ChangePreview
-            changes={submission?.changes}
-            persisted={submission?.persisted}
-            reviewMode={submission?.review_mode}
+          </section>
+
+          <SqlWorkspace
+            starterSql={STARTER_SQL}
+            onChange={setSqlText}
+            onSubmit={handleSubmit}
+            schema={editorSchema}
+            submitting={submitting}
+            disabled={!challenge}
           />
-          <ResultTable result={submission?.result} />
-        </section>
-      </main>
+          <OutputWorkspace
+            submission={submission}
+            submitting={submitting}
+            onNext={canContinue ? selectChallenge : undefined}
+            nextLabel={nextChallenge?.level ? `Continue to Level ${nextChallenge.level}` : 'Next challenge'}
+          />
+        </main>
+
+        <aside className="side-panel explorer-panel panel" data-open={panel === 'db'} aria-label="Database explorer">
+          <button type="button" className="btn btn-ghost drawer-close" onClick={() => setPanel(null)}>
+            <X size={16} aria-hidden="true" /> Close
+          </button>
+          <DatabaseExplorer tables={tables} />
+        </aside>
+      </div>
+
+      {confirmingReset && (
+        <ConfirmDialog
+          title="Reset training database?"
+          confirmLabel="Reset database"
+          onConfirm={handleReset}
+          onCancel={() => setConfirmingReset(false)}
+        >
+          Resetting will remove your Brightcart database changes and all course progress for this learner.
+        </ConfirmDialog>
+      )}
     </div>
   )
 }

@@ -13,6 +13,7 @@ class ChallengeSummary(BaseModel):
     level: int | None
     chapter: int | None
     title: str
+    concepts: list[str]
     difficulty: str
     kind: ChallengeKind
     status: ChallengeStatus
@@ -21,7 +22,6 @@ class ChallengeSummary(BaseModel):
 class ChallengeDetail(ChallengeSummary):
     story: str
     instructions: str
-    concepts: list[str]
     hints: list[str]
     total_hints: int
     # Completed challenges: submissions run against the pre-challenge state and are never saved.
@@ -93,15 +93,22 @@ class LearnerSession(BaseModel):
     stale: bool
 
 
+class ForeignKeyRef(BaseModel):
+    table: str
+    column: str
+
+
 class ColumnInfo(BaseModel):
     name: str
     type: str
     nullable: bool
     primary_key: bool
+    references: ForeignKeyRef | None = None
 
 
 class TableInfo(BaseModel):
     name: str
+    row_count: int
     columns: list[ColumnInfo]
 
 

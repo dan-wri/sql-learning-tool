@@ -59,11 +59,11 @@ describe('ChallengeList with the Levels 1-10 block', () => {
     render(<ChallengeList challenges={listing(3)} selectedId="l4" onSelect={vi.fn()} />)
 
     expect(screen.getAllByRole('button')).toHaveLength(10)
-    expect(screen.getByRole('button', { name: /^1\. Meet the catalogue.*Completed/ })).toBeEnabled()
-    expect(screen.getByRole('button', { name: /^3\. UK customers.*Completed/ })).toBeEnabled()
-    expect(screen.getByRole('button', { name: /^4\. Budget finds.*Open/ })).toHaveAttribute('aria-current', 'true')
-    expect(screen.getByRole('button', { name: /^5\. Ready to sell.*Locked/ })).toBeDisabled()
-    expect(screen.getByRole('button', { name: /^10\. Missing phone numbers.*Locked/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^1 Meet the catalogue.*Completed/ })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /^3 UK customers.*Completed/ })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /^4 Budget finds.*Open/ })).toHaveAttribute('aria-current', 'true')
+    expect(screen.getByRole('button', { name: /^5 Ready to sell.*Locked/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^10 Missing phone numbers.*Locked/ })).toBeDisabled()
   })
 
   it('only the first level is open on a fresh start', () => {
@@ -83,7 +83,8 @@ describe('ChallengeView story and task', () => {
     expect(within(task).getByText('Task for level 2.')).toBeInTheDocument()
     expect(within(story).queryByText('Task for level 2.')).toBeNull()
     expect(story.compareDocumentPosition(task) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(screen.getByText('Level 2 · Chapter 1')).toBeInTheDocument()
+    expect(screen.getByText('Chapter 1 · Foundations')).toBeInTheDocument()
+    expect(screen.getByText('Level 2 / 100')).toBeInTheDocument()
     expect(screen.getByRole('list', { name: 'Concepts' })).toHaveTextContent('SELECT')
   })
 
@@ -135,14 +136,14 @@ describe('App sequential progression', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Submit' }))
     expect(await screen.findByText(/Correct!/)).toBeInTheDocument()
-    await waitFor(() => expect(screen.getByRole('button', { name: /^2\. First contact sheet.*Open/ })).toBeEnabled())
+    await waitFor(() => expect(screen.getByRole('button', { name: /^2 First contact sheet.*Open/ })).toBeEnabled())
     expect(screen.getAllByRole('button', { name: /Locked/ })).toHaveLength(8)
 
-    fireEvent.click(screen.getByRole('button', { name: /next challenge/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Continue to Level 2/ }))
     expect(await screen.findByText('Story for level 2.')).toBeInTheDocument()
     expect(screen.getByText('Task for level 2.')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /^1\. Meet the catalogue.*Completed/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^1 Meet the catalogue.*Completed/ }))
     expect(await screen.findByText('Story for level 1.')).toBeInTheDocument()
     expect(screen.getByRole('note')).toHaveTextContent('Review mode')
   })
@@ -154,13 +155,14 @@ describe('App sequential progression', () => {
     render(<App />)
     await screen.findByText('Story for level 1.')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show hint (1 of 3)' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Reveal hint' }))
     expect(await screen.findByText('First nudge.')).toBeInTheDocument()
     expect(screen.queryByText('Second nudge.')).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show hint (2 of 3)' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Reveal next hint' }))
     expect(await screen.findByText('Second nudge.')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Show hint (3 of 3)' })).toBeInTheDocument()
+    expect(screen.getByText('2/3 used', { exact: false })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reveal next hint' })).toBeEnabled()
   })
 
   it('shows feedback for a wrong answer and leaves the next level locked', async () => {
@@ -181,17 +183,36 @@ describe('App sequential progression', () => {
     expect(screen.getAllByRole('button', { name: /Locked/ })).toHaveLength(9)
   })
 
+  it('opens the level navigator and database explorer as drawers on narrow screens', async () => {
+    render(<App />)
+    await screen.findByText('Story for level 1.')
+    const nav = screen.getByRole('complementary', { name: 'Level navigator' })
+    const explorer = screen.getByRole('complementary', { name: 'Database explorer' })
+    expect(nav).toHaveAttribute('data-open', 'false')
+
+    fireEvent.click(screen.getByRole('button', { name: /Levels/ }))
+    expect(nav).toHaveAttribute('data-open', 'true')
+    fireEvent.click(within(nav).getByRole('button', { name: 'Close' }))
+    expect(nav).toHaveAttribute('data-open', 'false')
+
+    fireEvent.click(screen.getByRole('button', { name: /Database/ }))
+    expect(explorer).toHaveAttribute('data-open', 'true')
+  })
+
   it('returns to Level 1 only after a reset', async () => {
     completed = 4
     api.resetDatabase.mockImplementation(async () => {
       completed = 0
       return { learner_id: '11111111-1111-4111-8111-111111111111', stale: false }
     })
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
-    render(<App />)
+        render(<App />)
     expect(await screen.findByText('Story for level 5.')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Reset database' }))
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveTextContent('remove your Brightcart database changes and all course progress')
+    expect(api.resetDatabase).not.toHaveBeenCalled()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Reset database' }))
 
     expect(await screen.findByText('Story for level 1.')).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /Open/ })).toHaveLength(1)

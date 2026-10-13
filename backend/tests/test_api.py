@@ -42,6 +42,16 @@ def test_schema_hides_internal_tables(client, learner_id):
                    for n in names)
 
 
+def test_schema_reports_foreign_keys_and_row_counts(client, learner_id):
+    tables = {t["name"]: t for t in client.get(
+        "/api/learner/schema", headers=_headers(learner_id)).json()["tables"]}
+    orders = {c["name"]: c for c in tables["orders"]["columns"]}
+    assert orders["customer_id"]["references"] == {"table": "customers", "column": "customer_id"}
+    assert orders["order_id"]["references"] is None and orders["order_id"]["primary_key"]
+    assert tables["categories"]["row_count"] == 6
+    assert tables["customers"]["row_count"] > 0
+
+
 def test_reset_endpoint(client, settings):
     learner_id = str(uuid.uuid4())
     client.post("/api/learner/session", headers=_headers(learner_id))

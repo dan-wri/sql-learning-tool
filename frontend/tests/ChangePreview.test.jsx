@@ -30,11 +30,11 @@ describe('ChangePreview', () => {
         persisted
       />,
     )
-    expect(screen.getByText('Saved to your training database.')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Inserted rows (1)' })).toBeInTheDocument()
+    expect(screen.getByText('Saved to your Brightcart database.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Added (1)' })).toBeInTheDocument()
     expect(screen.getByRole('cell', { name: 'Grace' })).toBeInTheDocument()
     expect(screen.getByText('NULL')).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: /Updated rows/ })).toBeNull()
+    expect(screen.queryByRole('heading', { name: /Updated/ })).toBeNull()
   })
 
   it('shows updated rows as before and after with changed cells marked', () => {
@@ -48,10 +48,10 @@ describe('ChangePreview', () => {
         ]}
       />,
     )
-    const section = screen.getByRole('heading', { name: 'Updated rows (1)' }).parentElement
+    const section = screen.getByRole('heading', { name: 'Updated (1)' }).parentElement
     expect(within(section).getByText('before')).toBeInTheDocument()
     expect(within(section).getByRole('cell', { name: '0700' })).toHaveClass('changed')
-    expect(screen.getByText('Not saved: these changes were rolled back.')).toBeInTheDocument()
+    expect(screen.getByText('Not saved — these changes were rolled back.')).toBeInTheDocument()
   })
 
   it('shows deleted rows and notes when the list is capped', () => {
@@ -61,8 +61,8 @@ describe('ChangePreview', () => {
         reviewMode
       />,
     )
-    expect(screen.getByRole('heading', { name: /Deleted rows \(80\)/ })).toHaveTextContent('showing first 1')
-    expect(screen.getByText(/Review mode: these changes were rolled back/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Removed \(80\)/ })).toHaveTextContent('showing first 1')
+    expect(screen.getByText(/Practice attempt — changes were rolled back/)).toBeInTheDocument()
   })
 
   it('explains when nothing changed', () => {

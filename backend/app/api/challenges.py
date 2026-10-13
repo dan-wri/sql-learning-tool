@@ -83,7 +83,8 @@ def list_challenges(request: Request, store: StoreDep, learner_id: LearnerIdDep)
     with store.connection(learner_id) as conn:
         completed = completed_ids(conn)
     return [
-        ChallengeSummary(id=c.id, level=c.level, chapter=c.chapter, title=c.title, difficulty=c.difficulty,
+        ChallengeSummary(id=c.id, level=c.level, chapter=c.chapter, title=c.title, concepts=c.concepts,
+                         difficulty=c.difficulty,
                          kind=c.kind, status=status_of(registry, completed, c.id))
         for c in registry.all()
     ]
