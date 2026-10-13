@@ -1,0 +1,22 @@
+id: l01-meet-the-catalogue
+level: 1
+chapter: 1
+title: Meet the catalogue
+difficulty: beginner
+concepts: [SELECT *, FROM]
+ordered: false
+story: >-
+  Nadia starts onboarding by showing the learner the small reference table that defines what Brightcart sells.
+  Before touching customer data, they simply need to see the six departments.
+instructions: |
+  Return every column and every row from the `categories` table.
+reference_sql: |
+  SELECT *
+  FROM categories;
+hints:
+  - A query that reads data starts with SELECT. Think about what you want to see, and which table it lives in.
+  - SELECT says what to show, and FROM names the table. A star (*) is shorthand for "every column".
+  - "The shape is: SELECT * FROM <table>; - the table you want is categories."
+accepted_alternatives:
+  - select category_id, name from categories
+  - SELECT c.* FROM categories AS c ORDER BY c.name

@@ -1,0 +1,22 @@
+id: l10-missing-phone-numbers
+level: 10
+chapter: 1
+title: Missing phone numbers
+difficulty: beginner
+concepts: ["NULL", IS NULL]
+ordered: false
+story: >-
+  Support notices that some customer records cannot be reached by phone.
+instructions: |
+  Return `customer_id`, `first_name`, `last_name` and `email` (in that order) for customers whose `phone` is NULL.
+reference_sql: |
+  SELECT customer_id, first_name, last_name, email
+  FROM customers
+  WHERE phone IS NULL;
+hints:
+  - A missing value in SQL is not an empty string or zero. It is a special "unknown" marker called NULL.
+  - "= can't test for NULL, because NULL isn't equal to anything - not even itself. SQL has a dedicated test: IS NULL."
+  - "The shape is: SELECT <four columns> FROM customers WHERE phone IS NULL;"
+accepted_alternatives:
+  - select customer_id, first_name, last_name, email from customers where phone is null order by customer_id
+  - SELECT customer_id, first_name, last_name, email FROM customers WHERE NOT (phone IS NOT NULL)

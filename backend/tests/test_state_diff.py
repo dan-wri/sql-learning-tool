@@ -23,7 +23,7 @@ def conn(store, learner_id):
 
 def test_visible_tables_exclude_internal_tables(conn):
     assert visible_tables(conn) == [
-        "categories", "customers", "order_items", "orders", "payments", "products"]
+        "categories", "customers", "order_items", "orders", "payments", "product_reviews", "products", "returns"]
 
 
 def test_diff_detects_inserts_updates_and_deletes(conn):

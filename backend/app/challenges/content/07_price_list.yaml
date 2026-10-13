@@ -1,0 +1,23 @@
+id: l07-price-list
+level: 7
+chapter: 1
+title: Price list
+difficulty: beginner
+concepts: [ORDER BY, ASC/DESC, tie-breakers]
+ordered: true
+story: >-
+  A supplier call starts in ten minutes and Lena wants the expensive items at the top of the sheet.
+instructions: |
+  Return `name` and `price` (in that order) for all products, sorted by price descending and then by product name
+  ascending as a tie-breaker.
+reference_sql: |
+  SELECT name, price
+  FROM products
+  ORDER BY price DESC, name ASC;
+hints:
+  - Rows come back in no promised order unless you ask for one. You need to sort the result.
+  - ORDER BY goes at the end of the query. Add DESC after a column to sort largest first; ASC (the default) sorts smallest first.
+  - "You can sort by more than one column: ORDER BY <first column> DESC, <second column> ASC - the second column only breaks ties in the first."
+accepted_alternatives:
+  - SELECT name, price FROM products ORDER BY 2 DESC, 1
+  - select p.name, p.price from products p order by p.price desc, p.name

@@ -10,6 +10,8 @@ ChallengeKind = Literal["query", "mutation"]
 
 class ChallengeSummary(BaseModel):
     id: str
+    level: int | None
+    chapter: int | None
     title: str
     difficulty: str
     kind: ChallengeKind
@@ -17,10 +19,12 @@ class ChallengeSummary(BaseModel):
 
 
 class ChallengeDetail(ChallengeSummary):
+    story: str
     instructions: str
+    concepts: list[str]
     hints: list[str]
     total_hints: int
-    # Completed mutation challenges: submissions are validated but always rolled back.
+    # Completed challenges: submissions run against the pre-challenge state and are never saved.
     review_mode: bool
 
 

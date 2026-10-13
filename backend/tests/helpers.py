@@ -1,6 +1,9 @@
 """Compare database contents by meaning, not by SQLite's file representation."""
 
 import sqlite3
+from pathlib import Path
+
+PROTOTYPE_DIR = Path(__file__).parent / "fixtures" / "prototype_content"
 
 
 def _tables(conn: sqlite3.Connection, internal: bool) -> list[str]:

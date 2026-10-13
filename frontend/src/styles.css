@@ -237,6 +237,52 @@ button.secondary {
   margin: 0 0 1rem;
 }
 
+.challenge-eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted, #6b7280);
+}
+
+.concepts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+
+.challenge-story,
+.challenge-task {
+  margin: 0 0 0.75rem;
+}
+
+.challenge-story h3,
+.challenge-task h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted, #6b7280);
+}
+
+.challenge-story p {
+  margin: 0;
+  line-height: 1.5;
+  padding: 0.6rem 0.75rem;
+  background: #f8fafc;
+  border-left: 3px solid #94a3b8;
+  border-radius: 4px;
+}
+
+.challenge-task .instructions {
+  margin: 0;
+  font-weight: 500;
+}
+
 .hints {
   margin: 0 0 0.75rem;
   background: #fffbeb;

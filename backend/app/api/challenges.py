@@ -83,8 +83,8 @@ def list_challenges(request: Request, store: StoreDep, learner_id: LearnerIdDep)
     with store.connection(learner_id) as conn:
         completed = completed_ids(conn)
     return [
-        ChallengeSummary(id=c.id, title=c.title, difficulty=c.difficulty, kind=c.kind,
-                         status=status_of(registry, completed, c.id))
+        ChallengeSummary(id=c.id, level=c.level, chapter=c.chapter, title=c.title, difficulty=c.difficulty,
+                         kind=c.kind, status=status_of(registry, completed, c.id))
         for c in registry.all()
     ]
 
@@ -99,14 +99,18 @@ def get_challenge(challenge_id: str, request: Request, store: StoreDep, learner_
     status = status_of(registry, completed, challenge_id)
     return ChallengeDetail(
         id=challenge.id,
+        level=challenge.level,
+        chapter=challenge.chapter,
         title=challenge.title,
         difficulty=challenge.difficulty,
         kind=challenge.kind,
         status=status,
+        story=challenge.story,
         instructions=challenge.instructions,
+        concepts=challenge.concepts,
         hints=challenge.hints[:revealed],
         total_hints=len(challenge.hints),
-        review_mode=challenge.kind == "mutation" and status == "completed",
+        review_mode=status == "completed",
     )
 
 

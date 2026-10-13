@@ -1,0 +1,23 @@
+id: l06-products-needing-attention
+level: 6
+chapter: 1
+title: Products needing attention
+difficulty: beginner
+concepts: [OR]
+ordered: false
+story: >-
+  Lena is preparing a clean-up list: either an out-of-stock product or an inactive product needs attention.
+instructions: |
+  Return `name`, `stock_quantity` and `is_active` (in that order) for products where stock is zero OR the product
+  is inactive.
+reference_sql: |
+  SELECT name, stock_quantity, is_active
+  FROM products
+  WHERE stock_quantity = 0 OR is_active = 0;
+hints:
+  - A product belongs on this list if either problem applies. It doesn't need both.
+  - Where AND needs every condition to hold, OR keeps a row if at least one condition holds.
+  - "The shape is: ... WHERE <out of stock> OR <inactive>; - out of stock means stock_quantity = 0, and inactive means is_active = 0."
+accepted_alternatives:
+  - select name, stock_quantity, is_active from products where is_active = 0 or stock_quantity < 1
+  - SELECT name, stock_quantity, is_active FROM products WHERE NOT (stock_quantity > 0 AND is_active = 1)

@@ -1,13 +1,12 @@
 import pytest
 
 from app.challenges.registry import load_challenges
-from app.config import CHALLENGES_DIR
 from app.progress.service import completed_ids
 from app.sql.orchestrator import submit
 from app.sql.sandbox import canonical_state_before, review_sandbox_factory
-from tests.helpers import internal_state, replay_until, visible_state
+from tests.helpers import PROTOTYPE_DIR, internal_state, replay_until, visible_state
 
-CHALLENGES = load_challenges(CHALLENGES_DIR).all()
+CHALLENGES = load_challenges(PROTOTYPE_DIR).all()
 INSERT_CHALLENGE = next(c for c in CHALLENGES if c.id == "add-new-customer")
 
 COLUMNS = "(first_name, last_name, email, city, country, signup_date)"

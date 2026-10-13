@@ -1,0 +1,22 @@
+id: l02-first-contact-sheet
+level: 2
+chapter: 1
+title: First contact sheet
+difficulty: beginner
+concepts: [selecting specific columns]
+ordered: false
+story: >-
+  Support needs a basic contact sheet for a routine campaign. This becomes the learner's first exercise in
+  choosing only the fields the business actually needs.
+instructions: |
+  Return `first_name`, `last_name` and `email` from every customer, in that column order.
+reference_sql: |
+  SELECT first_name, last_name, email
+  FROM customers;
+hints:
+  - You don't need every column this time. Decide which fields the contact sheet actually needs.
+  - Instead of a star, list the column names after SELECT, separated by commas. The order you list them is the order they appear.
+  - "The shape is: SELECT <column>, <column>, <column> FROM customers; - the columns are first_name, last_name and email."
+accepted_alternatives:
+  - select c.first_name, c.last_name, c.email from customers as c
+  - SELECT first_name AS given_name, last_name, email FROM customers ORDER BY email DESC

@@ -2,6 +2,7 @@ id: add-new-customer
 title: Welcome a new customer
 difficulty: beginner
 kind: mutation
+story: Prototype fixture for mutation-engine tests.
 write_operations: [INSERT]
 writable_tables: [customers]
 instructions: |

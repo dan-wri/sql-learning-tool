@@ -1,0 +1,25 @@
+id: l09-top-five-by-stock
+level: 9
+chapter: 1
+title: Top five by stock
+difficulty: beginner
+concepts: [LIMIT]
+ordered: true
+story: >-
+  Kwame wants to know which active products occupy the most warehouse space before a shelf move.
+instructions: |
+  Return `name` and `stock_quantity` (in that order) for the five active products with the highest stock, ordered
+  by stock descending and then by name ascending.
+reference_sql: |
+  SELECT name, stock_quantity
+  FROM products
+  WHERE is_active = 1
+  ORDER BY stock_quantity DESC, name ASC
+  LIMIT 5;
+hints:
+  - You want a short "top" list, not every product. Think about which products to consider, how to rank them, and how many to keep.
+  - Filter to active products with WHERE, rank them with ORDER BY, then use LIMIT at the very end to keep only the first few rows.
+  - "The shape is: ... WHERE is_active = 1 ORDER BY stock_quantity DESC, name ASC LIMIT <how many>; - LIMIT always comes last."
+accepted_alternatives:
+  - SELECT name, stock_quantity FROM products WHERE is_active = 1 ORDER BY stock_quantity DESC, name LIMIT 5 OFFSET 0
+  - select p.name, p.stock_quantity from products p where p.is_active = 1 order by 2 desc, 1 asc limit 5

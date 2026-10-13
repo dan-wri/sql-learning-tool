@@ -1,0 +1,24 @@
+id: l08-premium-range
+level: 8
+chapter: 1
+title: Premium range
+difficulty: beginner
+concepts: [WHERE with ORDER BY]
+ordered: true
+story: >-
+  With sorting understood, Lena narrows the same list to products above £50.
+instructions: |
+  Return `name` and `price` (in that order) for products priced above £50, most expensive first and then by name
+  ascending.
+reference_sql: |
+  SELECT name, price
+  FROM products
+  WHERE price > 50
+  ORDER BY price DESC, name ASC;
+hints:
+  - Two things from earlier levels are needed together - keeping only some rows, and sorting them.
+  - Use WHERE to keep products priced above £50, then ORDER BY to sort what is left. WHERE always comes before ORDER BY.
+  - "The shape is: SELECT name, price FROM products WHERE <condition> ORDER BY <sort> - sort by price DESC, then name ASC."
+accepted_alternatives:
+  - SELECT name, price FROM products WHERE 50 < price ORDER BY 2 DESC, 1 ASC
+  - select p.name, p.price from products p where not p.price <= 50 order by p.price desc, p.name

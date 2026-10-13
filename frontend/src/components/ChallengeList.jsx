@@ -23,7 +23,7 @@ export default function ChallengeList({ challenges, selectedId, onSelect }) {
               onClick={() => onSelect(challenge.id)}
             >
               <span className="challenge-title">
-                {index + 1}. {challenge.title}
+                {challenge.level ?? index + 1}. {challenge.title}
               </span>
               <span className={`status-badge ${challenge.status}`}>{STATUS_LABELS[challenge.status]}</span>
             </button>

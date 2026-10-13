@@ -1,0 +1,22 @@
+id: l04-budget-finds
+level: 4
+chapter: 1
+title: Budget finds
+difficulty: beginner
+concepts: [comparison operators]
+ordered: false
+story: >-
+  Lena from Merchandising wants a quick list of genuinely low-cost items for a small promotion.
+instructions: |
+  Return `name` and `price` (in that order) for products priced below £20.
+reference_sql: |
+  SELECT name, price
+  FROM products
+  WHERE price < 20;
+hints:
+  - This time the condition isn't "exactly equal to" something. It's about a number being smaller than a limit.
+  - WHERE can compare numbers with <, >, <=, >= and =. Pick the one that means "below".
+  - "The shape is: SELECT name, price FROM products WHERE price <operator> <number>; - £20 itself is not below £20."
+accepted_alternatives:
+  - select name, price from products where 20 > price
+  - SELECT p.name, p.price FROM products p WHERE NOT p.price >= 20 ORDER BY p.price

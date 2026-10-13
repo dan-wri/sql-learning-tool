@@ -1,0 +1,23 @@
+id: l03-uk-customers
+level: 3
+chapter: 1
+title: UK customers
+difficulty: beginner
+concepts: [WHERE, equality]
+ordered: false
+story: >-
+  A UK-only service notice is going out. Nadia asks the learner to isolate the relevant customer records.
+instructions: |
+  Return `first_name`, `last_name`, `email` and `city` (in that order) for customers whose `country` is `UK`.
+reference_sql: |
+  SELECT first_name, last_name, email, city
+  FROM customers
+  WHERE country = 'UK';
+hints:
+  - You only want some of the customers, not all of them. Which column tells you where a customer lives?
+  - WHERE goes after FROM and keeps only the rows that match a condition. Text values go in single quotes.
+  - "The shape is: SELECT <four columns> FROM customers WHERE country = '<value>'; - the value is UK."
+accepted_alternatives:
+  - SELECT c.first_name, c.last_name, c.email, c.city FROM customers AS c WHERE c.country = 'UK' ORDER BY c.email
+  - select first_name, last_name, email, city from customers where 'UK' = country
+  - SELECT first_name, last_name, email, city FROM customers WHERE country IN ('UK')

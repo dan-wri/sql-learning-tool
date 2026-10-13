@@ -3,9 +3,9 @@ import json
 import pytest
 
 from app.challenges.registry import load_challenges
-from app.config import CHALLENGES_DIR
+from tests.helpers import PROTOTYPE_DIR
 
-CHALLENGES = load_challenges(CHALLENGES_DIR).all()
+CHALLENGES = load_challenges(PROTOTYPE_DIR).all()
 INSERT_CHALLENGE = next(c for c in CHALLENGES if c.id == "add-new-customer")
 EARLIER = CHALLENGES[: CHALLENGES.index(INSERT_CHALLENGE)]
 GRACE_EMAIL = "grace.hopper@example.com"
@@ -14,7 +14,8 @@ WRONG_INSERT = ("INSERT INTO customers (first_name, last_name, email, city, coun
 
 
 @pytest.fixture
-def api(client, learner_id):
+def api(prototype_client, learner_id):
+    client = prototype_client
     headers = {"X-Learner-Id": learner_id}
     store = client.app.state.learner_store
 
@@ -50,6 +51,7 @@ def test_insert_challenge_is_locked_until_earlier_ones_pass(api):
     assert detail["kind"] == "mutation"
     assert detail["status"] == "unlocked"
     assert detail["review_mode"] is False
+    assert detail["story"]
 
 
 def test_incorrect_insert_fails_and_does_not_persist(api):
@@ -90,10 +92,12 @@ def test_correct_insert_persists_and_is_visible_to_later_queries(api):
     assert api.grace_count() == 1
     assert api.statuses()[INSERT_CHALLENGE.id] == "completed"
 
+    # A completed query replays against its own historical state, so it never sees later story changes.
     contact_list = api.submit(
         CHALLENGES[0].id, "SELECT first_name, last_name, email FROM customers")
     assert contact_list["passed"] is True
-    assert ["Grace", "Hopper", GRACE_EMAIL] in contact_list["result"]["rows"]
+    assert contact_list["review_mode"] is True
+    assert ["Grace", "Hopper", GRACE_EMAIL] not in contact_list["result"]["rows"]
 
 
 def test_completed_insert_runs_in_review_mode(api):

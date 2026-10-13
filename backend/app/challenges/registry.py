@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 from app.sql.authorizer import READ_ONLY, AccessPolicy, is_hidden_table
 
 WriteOperation = Literal["INSERT", "UPDATE", "DELETE"]
+RequiredFeature = Literal["cte", "window"]
 
 
 class Challenge(BaseModel):
@@ -19,9 +20,19 @@ class Challenge(BaseModel):
     difficulty: Literal["beginner", "intermediate", "advanced"]
     # query: SELECT validated by result set. mutation: INSERT/UPDATE/DELETE validated by state diff.
     kind: Literal["query", "mutation"] = "query"
+    # Display metadata only: progression follows file order. A set level must match the file position.
+    level: int | None = Field(default=None, ge=1)
+    chapter: int | None = Field(default=None, ge=1)
+    concepts: list[str] = Field(default_factory=list)
+    # Short narrative context; `instructions` stays the exact deliverable.
+    story: str = Field(min_length=1)
     instructions: str = Field(min_length=1)
     reference_sql: str = Field(min_length=1)
     ordered: bool = False
+    # Query challenges only: also require the output column names to match the reference.
+    match_column_names: bool = False
+    # Query challenges only: broad constructs the SQL must use, for levels that introduce them.
+    required_features: list[RequiredFeature] = Field(default_factory=list)
     write_operations: list[WriteOperation] = Field(default_factory=list)
     writable_tables: list[str] = Field(default_factory=list)
     # table -> columns excluded from mutation validation (only for genuinely unpredictable values).
@@ -40,8 +51,9 @@ class Challenge(BaseModel):
             if not self.write_operations or not self.writable_tables:
                 raise ValueError(
                     "mutation challenges need write_operations and writable_tables")
-            if self.ordered:
-                raise ValueError("ordered only applies to query challenges")
+            if self.ordered or self.match_column_names or self.required_features:
+                raise ValueError(
+                    "ordered, match_column_names and required_features only apply to query challenges")
         hidden = [t for t in self.writable_tables if is_hidden_table(t)]
         if hidden:
             raise ValueError(f"internal tables cannot be writable: {hidden}")
@@ -93,6 +105,9 @@ def load_challenges(directory: Path) -> ChallengeRegistry:
             raise ChallengeContentError(
                 f"{path.name}: duplicate challenge id '{challenge.id}'")
         seen.add(challenge.id)
+        if challenge.level is not None and challenge.level != len(challenges) + 1:
+            raise ChallengeContentError(
+                f"{path.name}: level {challenge.level} does not match its position {len(challenges) + 1}")
         challenges.append(challenge)
     if not challenges:
         raise ChallengeContentError(f"No challenges found in {directory}")

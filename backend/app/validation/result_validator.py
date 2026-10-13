@@ -26,7 +26,8 @@ def _column_label(columns: list[str], index: int) -> str:
     return f"column {index + 1} (`{columns[index]}`)"
 
 
-def compare_results(expected: QueryResult, actual: QueryResult, *, ordered: bool) -> Verdict:
+def compare_results(expected: QueryResult, actual: QueryResult, *, ordered: bool,
+                    match_column_names: bool = False) -> Verdict:
     if actual.truncated:
         return Verdict(False, "too_many_rows",
                        "Your query returns far more rows than expected. Check your filtering and joins.")
@@ -36,6 +37,11 @@ def compare_results(expected: QueryResult, actual: QueryResult, *, ordered: bool
         return Verdict(False, "column_count",
                        f"Your query returns {_plural(actual_width, 'column')}, but the task needs {expected_width}. "
                        "Re-read which columns the task asks for.")
+
+    if match_column_names and [c.lower() for c in expected.columns] != [c.lower() for c in actual.columns]:
+        return Verdict(False, "column_names",
+                       "The values may be right, but the output column names don't match the names the task asks for. "
+                       "Check your aliases.")
 
     expected_rows = [normalize_row(r) for r in expected.rows]
     actual_rows = [normalize_row(r) for r in actual.rows]

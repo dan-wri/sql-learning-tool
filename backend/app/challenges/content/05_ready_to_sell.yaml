@@ -1,0 +1,24 @@
+id: l05-ready-to-sell
+level: 5
+chapter: 1
+title: Ready to sell
+difficulty: beginner
+concepts: [AND]
+ordered: false
+story: >-
+  The storefront team only wants products that are both active and physically in stock. The learner now has to
+  satisfy two conditions at once.
+instructions: |
+  Return `name`, `price` and `stock_quantity` (in that order) for products where `is_active = 1` AND
+  `stock_quantity > 0`.
+reference_sql: |
+  SELECT name, price, stock_quantity
+  FROM products
+  WHERE is_active = 1 AND stock_quantity > 0;
+hints:
+  - A product only qualifies if two different things are true at the same time.
+  - Write both conditions in the WHERE clause and join them with AND. A row must satisfy both to be kept.
+  - "The shape is: ... WHERE <condition one> AND <condition two>; - the conditions are is_active = 1 and stock_quantity > 0."
+accepted_alternatives:
+  - select name, price, stock_quantity from products where stock_quantity > 0 and is_active = 1
+  - SELECT name, price, stock_quantity FROM products WHERE is_active AND stock_quantity >= 1 ORDER BY name

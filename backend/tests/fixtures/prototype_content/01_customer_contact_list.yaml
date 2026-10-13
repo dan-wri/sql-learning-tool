@@ -2,6 +2,7 @@ id: customer-contact-list
 title: Customer contact list
 difficulty: beginner
 ordered: false
+story: Prototype fixture for engine tests.
 instructions: |
   The marketing team is preparing a newsletter and needs a contact list.
 

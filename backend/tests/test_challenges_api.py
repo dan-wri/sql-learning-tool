@@ -46,27 +46,25 @@ def test_unknown_challenge_is_404(api):
 
 
 def test_correct_query_passes_and_unlocks_next(api):
-    response = api.submit(
-        FIRST.id, "SELECT first_name, last_name, email FROM customers")
+    response = api.submit(FIRST.id, "SELECT category_id, name FROM categories")
     body = response.json()
 
     assert response.status_code == 200
     assert body["passed"] is True
     assert body["newly_completed"] is True
     assert body["next_challenge_id"] == SECOND.id
-    assert body["result"]["columns"] == ["first_name", "last_name", "email"]
+    assert body["result"]["columns"] == ["category_id", "name"]
     assert api.statuses()[FIRST.id] == "completed"
     assert api.statuses()[SECOND.id] == "unlocked"
 
 
 def test_equivalent_query_passes(api):
-    sql = "select c.first_name as fn, c.last_name, c.email from customers c where 1 = 1 order by c.email"
+    sql = "select c.category_id as id, c.name from categories c where 1 = 1 order by c.name desc"
     assert api.submit(FIRST.id, sql).json()["passed"] is True
 
 
 def test_incorrect_result_fails_without_unlocking(api):
-    body = api.submit(
-        FIRST.id, "SELECT first_name, last_name, email FROM customers WHERE city = 'London'").json()
+    body = api.submit(FIRST.id, "SELECT * FROM categories WHERE category_id < 3").json()
 
     assert body["passed"] is False
     assert body["code"] == "row_count"
@@ -75,9 +73,10 @@ def test_incorrect_result_fails_without_unlocking(api):
 
 
 def test_ordering_is_enforced_when_required(api):
-    api.submit(FIRST.id, FIRST.reference_sql)
-    body = api.submit(
-        SECOND.id, "SELECT name, price FROM products WHERE price > 50 ORDER BY price").json()
+    for challenge in CHALLENGES[:6]:
+        assert api.submit(challenge.id, challenge.reference_sql).json()["passed"]
+    price_list = CHALLENGES[6]
+    body = api.submit(price_list.id, "SELECT name, price FROM products ORDER BY price DESC").json()
     assert body["passed"] is False
     assert body["code"] == "row_order"
 
@@ -129,9 +128,8 @@ def test_reference_sql_never_appears_in_responses(api):
         api.submit(FIRST.id, "nonsense"),
         api.submit(FIRST.id, FIRST.reference_sql),
         api.get(f"/challenges/{SECOND.id}"),
-        api.submit(SECOND.id, "SELECT name, price FROM products"),
-        api.submit(
-            SECOND.id, "SELECT name, price FROM products WHERE price > 50"),
+        api.submit(SECOND.id, "SELECT first_name FROM customers"),
+        api.submit(SECOND.id, "SELECT first_name, last_name, email FROM customers LIMIT 3"),
         api.get(f"/challenges/{SECOND.id}"),
     ]
     for _ in SECOND.hints:
@@ -140,6 +138,6 @@ def test_reference_sql_never_appears_in_responses(api):
     references = [_normalise(c.reference_sql) for c in CHALLENGES]
     for response in responses:
         text = _normalise(json.dumps(response.json()))
-        assert "reference" not in text
+        assert "reference_sql" not in text
         for reference in references:
             assert reference not in text

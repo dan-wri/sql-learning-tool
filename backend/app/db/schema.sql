@@ -9,7 +9,8 @@ CREATE TABLE customers (
     phone        TEXT,
     city         TEXT NOT NULL,
     country      TEXT NOT NULL,
-    signup_date  TEXT NOT NULL
+    signup_date  TEXT NOT NULL,
+    referred_by_customer_id  INTEGER REFERENCES customers (customer_id)
 );
 
 CREATE TABLE categories (
@@ -30,7 +31,9 @@ CREATE TABLE orders (
     order_id     INTEGER PRIMARY KEY,
     customer_id  INTEGER NOT NULL REFERENCES customers (customer_id),
     order_date   TEXT NOT NULL,
-    status       TEXT NOT NULL CHECK (status IN ('pending', 'shipped', 'delivered', 'cancelled'))
+    status       TEXT NOT NULL CHECK (status IN ('pending', 'shipped', 'delivered', 'cancelled')),
+    shipped_date    TEXT,
+    delivered_date  TEXT
 );
 
 CREATE TABLE order_items (
@@ -47,4 +50,22 @@ CREATE TABLE payments (
     amount      REAL NOT NULL,
     method      TEXT NOT NULL CHECK (method IN ('card', 'paypal', 'bank_transfer')),
     paid_at     TEXT NOT NULL
+);
+
+CREATE TABLE returns (
+    return_id      INTEGER PRIMARY KEY,
+    order_item_id  INTEGER NOT NULL REFERENCES order_items (order_item_id),
+    return_date    TEXT NOT NULL,
+    quantity       INTEGER NOT NULL CHECK (quantity > 0),
+    reason         TEXT NOT NULL,
+    refund_amount  REAL NOT NULL CHECK (refund_amount >= 0)
+);
+
+CREATE TABLE product_reviews (
+    review_id    INTEGER PRIMARY KEY,
+    product_id   INTEGER NOT NULL REFERENCES products (product_id),
+    customer_id  INTEGER NOT NULL REFERENCES customers (customer_id),
+    rating       INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    review_date  TEXT NOT NULL,
+    review_text  TEXT NOT NULL
 );

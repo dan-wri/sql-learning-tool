@@ -7,6 +7,7 @@ from app.config import Settings
 from app.db.build_template import build_template
 from app.learners.store import LearnerStore
 from app.main import create_app
+from tests.helpers import PROTOTYPE_DIR
 
 
 @pytest.fixture
@@ -32,5 +33,13 @@ def learner_id() -> str:
 
 @pytest.fixture
 def client(settings):
+    with TestClient(create_app(settings)) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+def prototype_client(tmp_path):
+    """App serving the preserved prototype challenges (a query then an INSERT) to exercise the mutation engine."""
+    settings = Settings(data_dir=tmp_path / "data", challenges_dir=PROTOTYPE_DIR)
     with TestClient(create_app(settings)) as test_client:
         yield test_client

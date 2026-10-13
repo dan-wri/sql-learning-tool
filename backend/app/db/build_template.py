@@ -11,7 +11,7 @@ from app.config import Settings
 from app.db.seed_data import generate
 
 # Bump whenever schema.sql, app_tables.sql or seed_data.py changes, so existing learner DBs show as stale.
-SEED_VERSION = 1
+SEED_VERSION = 2
 
 DB_DIR = Path(__file__).resolve().parent
 SCHEMA_SQL = DB_DIR / "schema.sql"

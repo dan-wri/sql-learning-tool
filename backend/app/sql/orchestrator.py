@@ -2,8 +2,8 @@
 
 Reference and learner SQL both start from the same state: the reference runs inside a
 savepoint that is rolled back before the learner's SQL runs. The transaction commits only
-on a pass, so a failed submission never changes data or progress. Completed mutation
-challenges run in review mode: they are validated in a throwaway sandbox rebuilt to the
+on a pass, so a failed submission never changes data or progress. Completed challenges (query
+and mutation) run in review mode: they are validated in a throwaway sandbox rebuilt to the
 pre-challenge state, and the learner's database is never written.
 """
 
@@ -22,6 +22,7 @@ from app.sql.executor import (
     first_keyword,
 )
 from app.sql.snapshot import TableChanges, diff_snapshots, take_snapshot
+from app.validation.features import FEATURE_LABELS, missing_features
 from app.validation.result_validator import compare_results
 from app.validation.state_validator import compare_changes
 
@@ -69,7 +70,15 @@ def _attempt_query(conn: sqlite3.Connection, challenge: Challenge, sql: str, tim
             conn, sql, challenge.access_policy, timeout_seconds=timeout_seconds)
     except QueryError as error:
         return _Attempt(False, error.kind, error.message)
-    verdict = compare_results(expected, actual, ordered=challenge.ordered)
+    verdict = compare_results(expected, actual, ordered=challenge.ordered,
+                              match_column_names=challenge.match_column_names)
+    if verdict.passed:
+        missing = missing_features(sql, challenge.required_features)
+        if missing:
+            needed = " and ".join(FEATURE_LABELS[name] for name in missing)
+            return _Attempt(False, "missing_feature",
+                            f"The result is right, but this level is about using {needed}. Try again using it.",
+                            result=actual)
     return _Attempt(verdict.passed, verdict.code, verdict.message, result=actual)
 
 
@@ -101,7 +110,7 @@ def _attempt_mutation(conn: sqlite3.Connection, challenge: Challenge, sql: str, 
 def submit(conn: sqlite3.Connection, challenge: Challenge, sql: str, *,
            review_sandbox: Callable[[], sqlite3.Connection] | None = None,
            timeout_seconds: float = TIMEOUT_SECONDS) -> SubmissionOutcome:
-    if challenge.kind == "mutation" and challenge.id in completed_ids(conn):
+    if challenge.id in completed_ids(conn):
         return _submit_review(challenge, sql, review_sandbox, timeout_seconds)
 
     conn.execute("BEGIN IMMEDIATE")
@@ -137,7 +146,8 @@ def _submit_review(challenge: Challenge, sql: str, review_sandbox: Callable[[], 
     sandbox = review_sandbox()
     try:
         sandbox.execute("BEGIN IMMEDIATE")
-        attempt = _attempt_mutation(sandbox, challenge, sql, timeout_seconds)
+        attempt_fn = _attempt_query if challenge.kind == "query" else _attempt_mutation
+        attempt = attempt_fn(sandbox, challenge, sql, timeout_seconds)
     finally:
         sandbox.close()
     return SubmissionOutcome(
